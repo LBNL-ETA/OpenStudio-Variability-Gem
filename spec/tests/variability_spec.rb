@@ -44,4 +44,6 @@ RSpec.describe OpenStudio::Variability do
     instance = OpenStudio::Variability::Variability.new
     expect(File.exist?(instance.measures_dir)).to be true
   end
+
+  puts 'End of spec helper.'
 end
