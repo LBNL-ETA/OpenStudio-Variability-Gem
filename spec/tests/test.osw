@@ -6,21 +6,26 @@
   ],
   "steps": [
     {
+      "measure_dir_name": "DR_Lighting",
+      "measure_arguments": {
+      }
+    },
+    {
+      "measure_dir_name": "lighting_retrofit",
+      "measure_arguments": {
+      }
+    },
+    {
+      "measure_dir_name": "roof_retrofit",
+      "measure_arguments": {
+      }
+    },
+    {
       "measure_dir_name": "AddOutputVariable",
       "arguments": {
         "variable_name": "Zone Mean Air Temperature",
         "reporting_frequency": "timestep",
         "key_value": "*"
-      }
-    },
-    {
-      "measure_dir_name": "lighting_retrofit",
-      "arguments": {
-      }
-    },
-    {
-      "measure_dir_name": "roof_retrofit",
-      "arguments": {
       }
     },
     {
