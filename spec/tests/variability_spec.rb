@@ -66,20 +66,20 @@ RSpec.describe OpenStudio::Variability do
     v_measure_paths = ["E:/Users/Han/Documents/GitHub/OpenStudio_related/OS-measures"]
     v_measure_steps = [
         {
-            "measure_dir_name" => "lighting_retrofit",
-            "arguments" => {}
-        },
-        {
-            "measure_dir_name" => "roof_retrofit",
-            "arguments" => {}
-        },
-        {
             "measure_dir_name" => "AddOutputVariable",
             "arguments" => {
                 "variable_name" => "Zone Mean Air Temperature",
                 "reporting_frequency" => "timestep",
                 "key_value" => "*"
             }
+        },
+        {
+            "measure_dir_name" => "lighting_retrofit",
+            "arguments" => {}
+        },
+        {
+            "measure_dir_name" => "roof_retrofit",
+            "arguments" => {}
         },
         {
             "measure_dir_name" => "ExportVariabletoCSV",
