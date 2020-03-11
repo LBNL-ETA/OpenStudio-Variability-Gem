@@ -34,6 +34,7 @@
 # *******************************************************************************
 
 require_relative '../spec_helper'
+require 'JSON'
 
 RSpec.describe OpenStudio::Variability do
   it 'has a version number' do
@@ -45,5 +46,99 @@ RSpec.describe OpenStudio::Variability do
     expect(File.exist?(instance.measures_dir)).to be true
   end
 
-  puts 'End of spec helper.'
+  # Spec examples for variability
+  puts 'Testing specs beginning here...'
+
+  it 'should run test file with variability measures' do
+    OpenStudio::Extension::Extension::DO_SIMULATIONS = true
+    test_case
+    expect(true).to be true
+  end
+
+  def test_case()
+    puts '-=' * 30
+    # Get seed model
+    root_dir = Dir.getwd
+    osm_path = File.join(root_dir, 'so_n.osm')
+    # model = load_osm(File.join(Dir.getwd, 'so_n.osm'))
+    weather_file_path = "C:/Users/hanli/Dropbox (Energy Technologies)/Projects/LDRD-simulation/EPWs/SF_AMY/SF_1988.epw"
+    seed_osm_path = osm_path
+    v_measure_paths = ["E:/Users/Han/Documents/GitHub/OpenStudio_related/OS-measures"]
+    v_measure_steps = [
+        {
+            "measure_dir_name" => "lighting_retrofit",
+            "arguments" => {}
+        },
+        {
+            "measure_dir_name" => "roof_retrofit",
+            "arguments" => {}
+        },
+        {
+            "measure_dir_name" => "AddOutputVariable",
+            "arguments" => {
+                "variable_name" => "Zone Mean Air Temperature",
+                "reporting_frequency" => "timestep",
+                "key_value" => "*"
+            }
+        },
+        {
+            "measure_dir_name" => "ExportVariabletoCSV",
+            "arguments" => {
+                "variable_name" => "Zone Mean Air Temperature",
+                "reporting_frequency" => "Zone Timestep"
+            }
+        },
+    ]
+    out_osw_path = File.join(Dir.getwd, 'test.osw')
+    create_workflow(seed_osm_path, weather_file_path, v_measure_paths, v_measure_steps, out_osw_path)
+
+    runner = OpenStudio::Extension::Runner.new(root_dir)
+    runner.run_osw(out_osw_path, File.join(root_dir, 'temp'))
+      # puts runner.methods
+  end
+
+  def create_workflow(seed_osm_path, weather_file_path, measure_paths, v_measure_steps, out_osw_path)
+    hash_osw = {
+        "seed_file" => seed_osm_path,
+        "weather_file" => weather_file_path,
+        "measure_paths" => measure_paths,
+        "steps" => v_measure_steps
+    }
+    File.open(out_osw_path, "w") do |f|
+      f.write(JSON.pretty_generate(hash_osw))
+    end
+  end
+
+  def load_osm(path_str)
+    translator = OpenStudio::OSVersion::VersionTranslator.new
+    path = OpenStudio::Path.new(path_str)
+    model = translator.loadModel(path)
+    if model.empty?
+      raise "Input #{path_str} is not valid, please check."
+    else
+      model = model.get
+    end
+    return model
+  end
+
+  def create_prototype_model()
+    return 42
+  end
+
+  def test_demand_response_measures()
+
+    return 42
+  end
+
+  def test_retrofit_measures()
+
+    return 42
+  end
+
+  def test_faulty_operation_measures()
+
+    return 42
+  end
+
+
 end
