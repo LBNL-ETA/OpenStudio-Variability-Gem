@@ -46,17 +46,19 @@ This gem is created based on [openstudio-extension-gem](https://github.com/NREL/
 
 2. Add this line to your application's Gemfile:
 
-```ruby
-gem 'openstudio-variability'
-```
+    ```ruby
+    gem 'openstudio-variability'
+    ```
 
-And then execute:
-
+    
+    ```ruby
     $ bundle install
+    ```
+    Or install it yourself as:
 
-Or install it yourself as:
-
+    ```ruby
     $ gem install 'openstudio-variability'
+    ```
 
 ## Usage
 
