@@ -10,8 +10,8 @@ This gem is created based on [openstudio-extension-gem](https://github.com/NREL/
 
 ## Installation
 
-
-1. Install Ruby and OpenStudio. If you have already done this, go to step 2.
+#### 1. Install Ruby and OpenStudio.
+If you have already done this, go to step 2.
 
 Install Ruby using the [RubyInstaller](https://rubyinstaller.org/downloads/archives/) for Ruby 2.2.4 (x64).
 
@@ -44,7 +44,9 @@ Verify your OpenStudio and Ruby configuration:
 ruby -e "require 'openstudio'" -e "puts OpenStudio::Model::Model.new"
 ```
 
-2. Add this line to your application's Gemfile:
+#### 2. Use the variability gem in your project 
+
+Add this line to your application's Gemfile:
 
 ```ruby
 gem 'openstudio-variability'
@@ -60,7 +62,7 @@ $ gem install 'openstudio-variability'
 
 Usage of this gem can vary based on your purposes. This section introduces the basic rake tasks and rspec tests. 
 
-####    1. Rake Tasks
+#### 1. Rake Tasks
 
 
 To list all available rake tasks: ``` bundle exec rake -T ```
@@ -84,15 +86,14 @@ Common rake tasks are inherited from the [openstudio-extension-gem](https://gith
 Rake tasks can be invoked by running: ``` bundle exec rake <name_of_rake_task>```
 
 
-####    2. Rspec Tests
+#### 2. Rspec Tests
 
 A spec test is packaged with this gem to demonstrate the usage of the variability gem.
 
-## TODO
+A demonstration test case is included in variability_spec.rb, which is in ```...spec/tests``` folder. 
+To run the test, change directory to the folder and ```bundle exec rspec variability_spec.rb```.
+A simulation will be initiated in the ```...spec/test-runs``` folder.
 
-- [ ] Remove measures from OpenStudio-Measures to standardize on this location
-- [ ] Update measures to code standards
-- [ ] Review and fill out the gemspec file with author and gem description
 
 # Acknowledgement
 
