@@ -90,9 +90,16 @@ Rake tasks can be invoked by running: ``` bundle exec rake <name_of_rake_task>``
 
 A spec test is packaged with this gem to demonstrate the usage of the variability gem.
 
-A demonstration test case is included in variability_spec.rb, which is in ```...spec/tests``` folder. 
-To run the test, change directory to the folder and ```bundle exec rspec variability_spec.rb```.
-A simulation will be initiated in the ```...spec/test-runs``` folder.
+Several demonstration test cases are included in the ```...spec/tests``` folder.
+
+* ```test_single_seed_variability_spec.rb``` contains the script to create a single OpenStudio workflow with a seed OpenStudio model and add variability measures to it.
+* ```test_multiple_seed_variability_spec.rb``` contains the script to create multiple OpenStudio workflows with a seed OpenStudio model and add variability measures to them.
+* ```test_demand_response_variability_spec.rb``` contains the script to a single OpenStudio workflows with a seed OpenStudio model and add demand response variability measures to them.
+* ```test_faulty_operation_variability_spec.rb``` contains the script to a single OpenStudio workflows with a seed OpenStudio model and add faulty operation variability measures to them.
+* ```test_retrofit_variability_spec.rb``` contains the script to a single OpenStudio workflows with a seed OpenStudio model and add retrofit variability measures to them.
+
+To run the tests, change directory to the folder and ```bundle exec rspec <name_of_test_variability_spec.rb>```.
+Simulation(s) will run in the ```...spec/test_runs``` folder.
 
 
 # Acknowledgement

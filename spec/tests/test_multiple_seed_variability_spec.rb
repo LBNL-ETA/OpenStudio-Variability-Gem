@@ -50,35 +50,10 @@ RSpec.describe OpenStudio::Variability do
   # Spec examples for variability
   puts 'Testing specs beginning here...'
 
-  it 'should run single simulation test with variability measures' do
-    OpenStudio::Extension::Extension::DO_SIMULATIONS = true
-
-    gem_root_path = File.expand_path("../..", Dir.pwd)
-
-    spec_folder_path = File.join(gem_root_path, 'spec')
-    run_path = File.join(spec_folder_path, 'test_runs', "run_#{Time.now.strftime("%Y%m%d_%H%M%S")}")
-    osm_path = File.join(spec_folder_path, 'seed_models/example_small_office.osm')
-    epw_path = File.join(spec_folder_path, 'seed_models/Chicago_TMY3.epw')
-
-    measures_path = File.join(gem_root_path, 'lib/measures')
-    other_example_measures_path = File.join(spec_folder_path, 'seed_models/example_measures')
-
-    # Add your OpenStudio measure directories to the list if you want to use additional measures
-    v_measure_paths = [
-        measures_path,
-        other_example_measures_path
-    ]
-
-    successful = test_case(osm_path, epw_path, v_measure_paths, run_path)
-    expect(successful).to be true
-  end
-
-
   it 'should run multiple simulation tests with variability measures' do
     OpenStudio::Extension::Extension::DO_SIMULATIONS = true
 
     gem_root_path = File.expand_path("../..", Dir.pwd)
-
     spec_folder_path = File.join(gem_root_path, 'spec')
     run_path = File.join(spec_folder_path, 'test_runs', "run_#{Time.now.strftime("%Y%m%d_%H%M%S")}")
     osm_path = File.join(spec_folder_path, 'seed_models/example_small_office.osm')
@@ -95,91 +70,6 @@ RSpec.describe OpenStudio::Variability do
 
     successful = test_case_multiple(osm_path, epw_path, v_measure_paths, run_path)
     expect(successful).to be true
-  end
-
-  def test_case(seed_osm_path, epw_path, v_measure_paths, run_path)
-
-    unless File.directory?(run_path)
-      FileUtils.mkdir_p(run_path)
-    end
-
-    v_measure_steps_raw = [
-        {
-            "measure_type" => "OpenStudio",
-            "measure_content" => {
-                "measure_dir_name" => "DR_Lighting",
-                "measure_arguments" => {},
-            }
-        },
-        {
-            "measure_type" => "OpenStudio",
-            "measure_content" => {
-                "measure_dir_name" => "lighting_retrofit",
-                "measure_arguments" => {},
-            }
-        },
-        {
-            "measure_type" => "EnergyPlus",
-            "measure_content" => {
-                "measure_dir_name" => "roof_retrofit",
-                "measure_arguments" => {},
-            }
-        },
-        {
-            "measure_type" => "OpenStudio",
-            "measure_content" => {
-                "measure_dir_name" => "AddOutputVariable",
-                "arguments" => {
-                    "variable_name" => "Zone Mean Air Temperature",
-                    "reporting_frequency" => "timestep",
-                    "key_value" => "*"
-                }
-            }
-        },
-        {
-            "measure_type" => "OpenStudio",
-            "measure_content" => {
-                "measure_dir_name" => "AddMeter",
-                "arguments" => {
-                    "meter_name" => "Electricity:Facility",
-                    "reporting_frequency" => "timestep"
-                }
-            }
-        },
-        {
-            "measure_type" => "Reporting",
-            "measure_content" => {
-                "measure_dir_name" => "ExportVariabletoCSV",
-                "arguments" => {
-                    "variable_name" => "Zone Mean Air Temperature",
-                    "reporting_frequency" => "Zone Timestep"
-                }
-            }
-        },
-        {
-            "measure_type" => "Reporting",
-            "measure_content" => {
-                "measure_dir_name" => "ExportMetertoCSV",
-                "arguments" => {
-                    "meter_name" => "Electricity:Facility",
-                    "reporting_frequency" => "Zone Timestep"
-                }
-            }
-        },
-    ]
-    v_measure_steps = order_measures(v_measure_steps_raw)
-
-    out_osw_path = File.join(run_path, 'test_run.osw')
-    create_workflow(seed_osm_path, epw_path, v_measure_paths, v_measure_steps, out_osw_path)
-    runner = OpenStudio::Extension::Runner.new(run_path)
-    runner.run_osw(out_osw_path, run_path)
-
-    # Check if simulation is completed successfully
-    successful = false
-    sql_file = out_osw_path.gsub('in\\.osw', 'eplusout\\.sql')
-    puts "Simulation not completed successfully for file: #{out_osw_path}" unless File.exist?(sql_file)
-    successful = true if File.exist?(sql_file)
-    return successful
   end
 
   def test_case_multiple(seed_osm_path, epw_path, v_measure_paths, run_path, max_n_parallel_run = 4)
@@ -429,26 +319,5 @@ RSpec.describe OpenStudio::Variability do
     end
     return model
   end
-
-  def create_prototype_model()
-
-    return 42
-  end
-
-  def test_demand_response_measures()
-
-    return 42
-  end
-
-  def test_retrofit_measures()
-
-    return 42
-  end
-
-  def test_faulty_operation_measures()
-
-    return 42
-  end
-
 
 end
