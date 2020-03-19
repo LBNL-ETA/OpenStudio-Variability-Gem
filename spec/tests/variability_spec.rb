@@ -53,10 +53,23 @@ RSpec.describe OpenStudio::Variability do
   it 'should run test file with variability measures' do
     OpenStudio::Extension::Extension::DO_SIMULATIONS = true
 
-    run_path = File.join(File.expand_path("..", Dir.pwd), 'test_runs', "run_#{Time.now.strftime("%Y%m%d_%H%M")}")
-    osm_path = 'E:/Users/Han/Documents/GitHub/OpenStudio_related/openstudio-variability-gem/spec/seed_models/so_n.osm'
-    epw_path = "C:/Users/hanli/Dropbox (Energy Technologies)/Projects/LDRD-simulation/EPWs/SF_AMY/SF_1988.epw"
-    v_measure_paths = ["E:/Users/Han/Documents/GitHub/OpenStudio_related/OS-measures"]
+    gem_root_path = File.expand_path("../..", Dir.pwd)
+
+    spec_folder_path = File.join(gem_root_path, 'spec')
+    run_path = File.join(spec_folder_path, 'test_runs', "run_#{Time.now.strftime("%Y%m%d_%H%M%S")}")
+    osm_path = File.join(spec_folder_path, 'seed_models/example_small_office.osm')
+    epw_path = File.join(spec_folder_path, 'seed_models/Chicago_TMY3.epw')
+
+    measures_path = File.join(gem_root_path, 'lib/measures')
+    other_example_measures_path = File.join(spec_folder_path, 'seed_models/example_measures')
+
+    # Add your OpenStudio measure directories to the list if you want to use additional measures
+    v_measure_paths = [
+        measures_path,
+        other_example_measures_path
+    ]
+
+    # Define the measures steps in the following manner.
     v_measure_steps_raw = [
         {
             "measure_type" => "OpenStudio",
@@ -91,11 +104,31 @@ RSpec.describe OpenStudio::Variability do
             }
         },
         {
+            "measure_type" => "OpenStudio",
+            "measure_content" => {
+                "measure_dir_name" => "AddMeter",
+                "arguments" => {
+                    "meter_name" => "Electricity:Facility",
+                    "reporting_frequency" => "timestep"
+                }
+            }
+        },
+        {
             "measure_type" => "Reporting",
             "measure_content" => {
                 "measure_dir_name" => "ExportVariabletoCSV",
                 "arguments" => {
                     "variable_name" => "Zone Mean Air Temperature",
+                    "reporting_frequency" => "Zone Timestep"
+                }
+            }
+        },
+        {
+            "measure_type" => "Reporting",
+            "measure_content" => {
+                "measure_dir_name" => "ExportMetertoCSV",
+                "arguments" => {
+                    "meter_name" => "Electricity:Facility",
                     "reporting_frequency" => "Zone Timestep"
                 }
             }
