@@ -50,7 +50,7 @@ RSpec.describe OpenStudio::Variability do
   # Spec examples for variability
   puts 'Testing specs beginning here...'
 
-  it 'should run test file with variability measures' do
+  it 'should run single simulation test with variability measures' do
     OpenStudio::Extension::Extension::DO_SIMULATIONS = true
 
     gem_root_path = File.expand_path("../..", Dir.pwd)
@@ -69,7 +69,40 @@ RSpec.describe OpenStudio::Variability do
         other_example_measures_path
     ]
 
-    # Define the measures steps in the following manner.
+    successful = test_case(osm_path, epw_path, v_measure_paths, run_path)
+    expect(successful).to be true
+  end
+
+
+  it 'should run multiple simulation tests with variability measures' do
+    OpenStudio::Extension::Extension::DO_SIMULATIONS = true
+
+    gem_root_path = File.expand_path("../..", Dir.pwd)
+
+    spec_folder_path = File.join(gem_root_path, 'spec')
+    run_path = File.join(spec_folder_path, 'test_runs', "run_#{Time.now.strftime("%Y%m%d_%H%M%S")}")
+    osm_path = File.join(spec_folder_path, 'seed_models/example_small_office.osm')
+    epw_path = File.join(spec_folder_path, 'seed_models/Chicago_TMY3.epw')
+
+    measures_path = File.join(gem_root_path, 'lib/measures')
+    other_example_measures_path = File.join(spec_folder_path, 'seed_models/example_measures')
+
+    # Add your OpenStudio measure directories to the list if you want to use additional measures
+    v_measure_paths = [
+        measures_path,
+        other_example_measures_path
+    ]
+
+    successful = test_case_multiple(osm_path, epw_path, v_measure_paths, run_path)
+    expect(successful).to be true
+  end
+
+  def test_case(seed_osm_path, epw_path, v_measure_paths, run_path)
+
+    unless File.directory?(run_path)
+      FileUtils.mkdir_p(run_path)
+    end
+
     v_measure_steps_raw = [
         {
             "measure_type" => "OpenStudio",
@@ -134,16 +167,8 @@ RSpec.describe OpenStudio::Variability do
             }
         },
     ]
-    successful = test_case(osm_path, epw_path, v_measure_paths, v_measure_steps_raw, run_path)
-    expect(successful).to be true
-  end
-
-  def test_case(seed_osm_path, epw_path, v_measure_paths, v_measure_steps_raw, run_path)
-    # Get seed model
     v_measure_steps = order_measures(v_measure_steps_raw)
-    unless File.directory?(run_path)
-      FileUtils.mkdir_p(run_path)
-    end
+
     out_osw_path = File.join(run_path, 'test_run.osw')
     create_workflow(seed_osm_path, epw_path, v_measure_paths, v_measure_steps, out_osw_path)
     runner = OpenStudio::Extension::Runner.new(run_path)
@@ -154,6 +179,211 @@ RSpec.describe OpenStudio::Variability do
     sql_file = out_osw_path.gsub('in\\.osw', 'eplusout\\.sql')
     puts "Simulation not completed successfully for file: #{out_osw_path}" unless File.exist?(sql_file)
     successful = true if File.exist?(sql_file)
+    return successful
+  end
+
+  def test_case_multiple(seed_osm_path, epw_path, v_measure_paths, run_path, max_n_parallel_run = 4)
+
+    # Get seed model
+    unless File.directory?(run_path)
+      FileUtils.mkdir_p(run_path)
+    end
+
+    v_osws = []
+    # Create workflow 0
+    v_measure_steps_raw_0 = [
+        {
+            "measure_type" => "OpenStudio",
+            "measure_content" => {
+                "measure_dir_name" => "AddOutputVariable",
+                "arguments" => {
+                    "variable_name" => "Zone Mean Air Temperature",
+                    "reporting_frequency" => "timestep",
+                    "key_value" => "*"
+                }
+            }
+        },
+        {
+            "measure_type" => "OpenStudio",
+            "measure_content" => {
+                "measure_dir_name" => "AddMeter",
+                "arguments" => {
+                    "meter_name" => "Electricity:Facility",
+                    "reporting_frequency" => "timestep"
+                }
+            }
+        },
+        {
+            "measure_type" => "Reporting",
+            "measure_content" => {
+                "measure_dir_name" => "ExportVariabletoCSV",
+                "arguments" => {
+                    "variable_name" => "Zone Mean Air Temperature",
+                    "reporting_frequency" => "Zone Timestep"
+                }
+            }
+        },
+        {
+            "measure_type" => "Reporting",
+            "measure_content" => {
+                "measure_dir_name" => "ExportMetertoCSV",
+                "arguments" => {
+                    "meter_name" => "Electricity:Facility",
+                    "reporting_frequency" => "Zone Timestep"
+                }
+            }
+        },
+    ]
+    v_measure_steps_0 = order_measures(v_measure_steps_raw_0)
+    out_osw_path_0 = File.join(run_path, 'test_run_0/t0.osw')
+    unless File.directory?(File.dirname(out_osw_path_0))
+      FileUtils.mkdir_p(File.dirname(out_osw_path_0))
+    end
+    create_workflow(seed_osm_path, epw_path, v_measure_paths, v_measure_steps_0, out_osw_path_0)
+    v_osws << out_osw_path_0
+
+    # Create workflow 1
+    v_measure_steps_raw_1 = [
+        {
+            "measure_type" => "OpenStudio",
+            "measure_content" => {
+                "measure_dir_name" => "lighting_retrofit",
+                "measure_arguments" => {},
+            }
+        },
+        {
+            "measure_type" => "OpenStudio",
+            "measure_content" => {
+                "measure_dir_name" => "AddOutputVariable",
+                "arguments" => {
+                    "variable_name" => "Zone Mean Air Temperature",
+                    "reporting_frequency" => "timestep",
+                    "key_value" => "*"
+                }
+            }
+        },
+        {
+            "measure_type" => "OpenStudio",
+            "measure_content" => {
+                "measure_dir_name" => "AddMeter",
+                "arguments" => {
+                    "meter_name" => "Electricity:Facility",
+                    "reporting_frequency" => "timestep"
+                }
+            }
+        },
+        {
+            "measure_type" => "Reporting",
+            "measure_content" => {
+                "measure_dir_name" => "ExportVariabletoCSV",
+                "arguments" => {
+                    "variable_name" => "Zone Mean Air Temperature",
+                    "reporting_frequency" => "Zone Timestep"
+                }
+            }
+        },
+        {
+            "measure_type" => "Reporting",
+            "measure_content" => {
+                "measure_dir_name" => "ExportMetertoCSV",
+                "arguments" => {
+                    "meter_name" => "Electricity:Facility",
+                    "reporting_frequency" => "Zone Timestep"
+                }
+            }
+        },
+    ]
+    v_measure_steps_1 = order_measures(v_measure_steps_raw_1)
+    out_osw_path_1 = File.join(run_path, 'test_run_1/t1.osw')
+    unless File.directory?(File.dirname(out_osw_path_1))
+      FileUtils.mkdir_p(File.dirname(out_osw_path_1))
+    end
+    create_workflow(seed_osm_path, epw_path, v_measure_paths, v_measure_steps_1, out_osw_path_1)
+    v_osws << out_osw_path_1
+
+    # Create workflow 2
+    v_measure_steps_raw_2 = [
+        {
+            "measure_type" => "OpenStudio",
+            "measure_content" => {
+                "measure_dir_name" => "DR_Lighting",
+                "measure_arguments" => {},
+            }
+        },
+        {
+            "measure_type" => "OpenStudio",
+            "measure_content" => {
+                "measure_dir_name" => "lighting_retrofit",
+                "measure_arguments" => {},
+            }
+        },
+        {
+            "measure_type" => "EnergyPlus",
+            "measure_content" => {
+                "measure_dir_name" => "roof_retrofit",
+                "measure_arguments" => {},
+            }
+        },
+        {
+            "measure_type" => "OpenStudio",
+            "measure_content" => {
+                "measure_dir_name" => "AddOutputVariable",
+                "arguments" => {
+                    "variable_name" => "Zone Mean Air Temperature",
+                    "reporting_frequency" => "timestep",
+                    "key_value" => "*"
+                }
+            }
+        },
+        {
+            "measure_type" => "OpenStudio",
+            "measure_content" => {
+                "measure_dir_name" => "AddMeter",
+                "arguments" => {
+                    "meter_name" => "Electricity:Facility",
+                    "reporting_frequency" => "timestep"
+                }
+            }
+        },
+        {
+            "measure_type" => "Reporting",
+            "measure_content" => {
+                "measure_dir_name" => "ExportVariabletoCSV",
+                "arguments" => {
+                    "variable_name" => "Zone Mean Air Temperature",
+                    "reporting_frequency" => "Zone Timestep"
+                }
+            }
+        },
+        {
+            "measure_type" => "Reporting",
+            "measure_content" => {
+                "measure_dir_name" => "ExportMetertoCSV",
+                "arguments" => {
+                    "meter_name" => "Electricity:Facility",
+                    "reporting_frequency" => "Zone Timestep"
+                }
+            }
+        },
+    ]
+    v_measure_steps_2 = order_measures(v_measure_steps_raw_2)
+    out_osw_path_2 = File.join(run_path, 'test_run_2/t2.osw')
+    unless File.directory?(File.dirname(out_osw_path_2))
+      FileUtils.mkdir_p(File.dirname(out_osw_path_2))
+    end
+    create_workflow(seed_osm_path, epw_path, v_measure_paths, v_measure_steps_2, out_osw_path_2)
+    v_osws << out_osw_path_2
+
+    runner = OpenStudio::Extension::Runner.new(run_path)
+    runner.run_osws(v_osws, max_n_parallel_run) # Maximum number of parallel run allowed
+
+    # Check if simulation is completed successfully
+    successful = false
+    sql_file_0 = out_osw_path_0.gsub('in\\.osw', 'eplusout\\.sql')
+    sql_file_1 = out_osw_path_1.gsub('in\\.osw', 'eplusout\\.sql')
+    sql_file_2 = out_osw_path_2.gsub('in\\.osw', 'eplusout\\.sql')
+    successful = true if File.exist?(sql_file_0) && File.exist?(sql_file_1) && File.exist?(sql_file_2)
+
     return successful
   end
 
