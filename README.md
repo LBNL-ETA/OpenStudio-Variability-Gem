@@ -36,7 +36,7 @@ This gem is created based on [openstudio-extension-gem](https://github.com/NREL/
     Install OpenStudio v2.9.1.  Create a file ```C:\your-ruby-2.2.4\lib\ruby\site_ruby\openstudio.rb``` and point it to your OpenStudio installation by editing the contents.  E.g.:
 
     ```ruby
-    require 'C:\openstudio-2.9.0\Ruby\openstudio.rb'
+    require 'C:\openstudio-2.9.1\Ruby\openstudio.rb'
     ```
 
     Verify your OpenStudio and Ruby configuration:
@@ -50,11 +50,7 @@ This gem is created based on [openstudio-extension-gem](https://github.com/NREL/
     gem 'openstudio-variability'
     ```
 
-    
-    ```ruby
-    $ bundle install
-    ```
-    Or install it yourself as:
+    Run ```ruby$ bundle install``` to install the gem, or install it yourself with:
 
     ```ruby
     $ gem install 'openstudio-variability'
@@ -62,13 +58,35 @@ This gem is created based on [openstudio-extension-gem](https://github.com/NREL/
 
 ## Usage
 
-Usage of this gem can vary based on your purposes.
+Usage of this gem can vary based on your purposes. This section introduces the basic rake tasks and rspec tests. 
 
-#### Rake Tasks
+####    1. Rake Tasks
 
-Some common rake tasks are inherited from the [openstudio-extension-gem](https://github.com/NREL/openstudio-extension-gem#rake-tasks).
 
-#### Rspec Tests
+Common rake tasks are inherited from the [openstudio-extension-gem](https://github.com/NREL/openstudio-extension-gem#rake-tasks).
+
+| Rake Task | Description |
+| --------- | ----------- |
+| openstudio:list_measures             | List all measures in the calling gem |
+| openstudio:measures:add_license      | Add License File to measures in the calling gem |
+| openstudio:measures:add_readme       | Add README.md.erb file if it and the README markdown file do not already exist for a measure |
+| openstudio:measures:copy_resources   | Copy the resources files to individual measures in the calling gem |
+| openstudio:measures:update_copyright | Update copyright on measure files in the calling gem |
+| openstudio`:runner:`init             | Create a runner.conf file running simulations |
+| openstudio:stage_bcl                 | Copy the measures to a location that can be uploaded to BCL |
+| openstudio:push_bcl                  | Upload measures from the specified location to the BCL |
+| openstudio:test_with_docker          | Use openstudio docker image to run tests |
+| openstudio:test_with_openstudio      | Use openstudio system ruby to run tests |
+| openstudio:update_measures           | Run the CLI task to check for measure updates and update the measure xml files |
+
+These can all be invoked from the derivative gem by running the following command in a terminal:
+
+``` bundle exec rake <name_of_rake_task>```
+
+
+
+
+####    2. Rspec Tests
 
 A spec test is packaged with this gem to demonstrate the usage. 
 
@@ -78,7 +96,8 @@ A spec test is packaged with this gem to demonstrate the usage.
 - [ ] Update measures to code standards
 - [ ] Review and fill out the gemspec file with author and gem description
 
-# Acknowledgement
+# Acknowledgement
+
 This repository is part of the deliverables from the DOE Energy Data Vault project.
 
 
