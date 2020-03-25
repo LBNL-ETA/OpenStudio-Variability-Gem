@@ -1,5 +1,5 @@
 # *******************************************************************************
-# OpenStudio(R), Copyright (c) 2008-2020, Alliance for Sustainable Energy, LLC.
+# OpenStudio(Retrofit_equipment_os), Copyright (c) 2008-2020, Alliance for Sustainable Energy, LLC.
 # All rights reserved.
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -82,21 +82,21 @@ RSpec.describe OpenStudio::Variability do
         {
             "measure_type" => "OpenStudio",
             "measure_content" => {
-                "measure_dir_name" => "DR_Lighting",
+                "measure_dir_name" => "DR_Lighting_os",
                 "measure_arguments" => {},
             }
         },
         {
             "measure_type" => "OpenStudio",
             "measure_content" => {
-                "measure_dir_name" => "lighting_retrofit",
+                "measure_dir_name" => "Retrofit_lighting_os",
                 "measure_arguments" => {},
             }
         },
         {
             "measure_type" => "EnergyPlus",
             "measure_content" => {
-                "measure_dir_name" => "roof_retrofit",
+                "measure_dir_name" => "Retrofit_roof_ep",
                 "measure_arguments" => {},
             }
         },

@@ -1,0 +1,117 @@
+<measure>
+  <schema_version>3.0</schema_version>
+  <name>add_ice_storage</name>
+  <uid>18fd4d74-b63e-4c2f-b09d-7f28375f4fcb</uid>
+  <version_id>87060401-8bb3-4b1b-985a-c6d66367ab51</version_id>
+  <version_modified>20190906T194806Z</version_modified>
+  <xml_checksum>994EE76E</xml_checksum>
+  <class_name>AddIceStorage</class_name>
+  <display_name>DR Ice Storage (Large Office)</display_name>
+  <description>This measure allows you to apply a chiller from a built in library.</description>
+  <modeler_description>This measure contains a built in idf file library of chillers.  Arguments to the measure allow you to choose a specific chiller by name and apply it to a specified chilled water plant.</modeler_description>
+  <arguments>
+    <argument>
+      <name>primary_chiller_name</name>
+      <display_name>Name of Existing Chiller</display_name>
+      <type>String</type>
+      <required>true</required>
+      <model_dependent>false</model_dependent>
+      <default_value>90.1-2004 WaterCooled  Centrifugal Chiller 0</default_value>
+    </argument>
+    <argument>
+      <name>condenser_loop_name</name>
+      <display_name>Condenser Loop Name</display_name>
+      <description>The condenser loop to connect the new charging chiller to</description>
+      <type>Choice</type>
+      <required>true</required>
+      <model_dependent>false</model_dependent>
+    </argument>
+    <argument>
+      <name>auto_date</name>
+      <display_name>Enable Climate-specific Periods Setting ?</display_name>
+      <type>Boolean</type>
+      <required>true</required>
+      <model_dependent>false</model_dependent>
+      <default_value>true</default_value>
+      <choices>
+        <choice>
+          <value>true</value>
+          <display_name>true</display_name>
+        </choice>
+        <choice>
+          <value>false</value>
+          <display_name>false</display_name>
+        </choice>
+      </choices>
+    </argument>
+  </arguments>
+  <outputs/>
+  <provenances/>
+  <tags>
+    <tag>HVAC.Cooling</tag>
+  </tags>
+  <attributes>
+    <attribute>
+      <name>Measure Type</name>
+      <value>ModelMeasure</value>
+      <datatype>string</datatype>
+    </attribute>
+    <attribute>
+      <name>Intended Software Tool</name>
+      <value>Apply Measure Now</value>
+      <datatype>string</datatype>
+    </attribute>
+    <attribute>
+      <name>Intended Software Tool</name>
+      <value>OpenStudio Application</value>
+      <datatype>string</datatype>
+    </attribute>
+    <attribute>
+      <name>Intended Software Tool</name>
+      <value>Parametric Analysis Tool</value>
+      <datatype>string</datatype>
+    </attribute>
+    <attribute>
+      <name>Intended Use Case</name>
+      <value>Model Articulation</value>
+      <datatype>string</datatype>
+    </attribute>
+  </attributes>
+  <files>
+    <file>
+      <filename>add_chiller_test.rb</filename>
+      <filetype>rb</filetype>
+      <usage_type>test</usage_type>
+      <checksum>E1A9288A</checksum>
+    </file>
+    <file>
+      <filename>chiller_library.idf</filename>
+      <filetype>idf</filetype>
+      <usage_type>resource</usage_type>
+      <checksum>4CF6FBEA</checksum>
+    </file>
+    <file>
+      <filename>desktop.ini</filename>
+      <filetype>ini</filetype>
+      <usage_type>test</usage_type>
+      <checksum>96A4B7E7</checksum>
+    </file>
+    <file>
+      <filename>desktop.ini</filename>
+      <filetype>ini</filetype>
+      <usage_type>resource</usage_type>
+      <checksum>96A4B7E7</checksum>
+    </file>
+    <file>
+      <version>
+        <software_program>OpenStudio</software_program>
+        <identifier>1.5.0</identifier>
+        <min_compatible>1.5.0</min_compatible>
+      </version>
+      <filename>measure.rb</filename>
+      <filetype>rb</filetype>
+      <usage_type>script</usage_type>
+      <checksum>AFA4F794</checksum>
+    </file>
+  </files>
+</measure>

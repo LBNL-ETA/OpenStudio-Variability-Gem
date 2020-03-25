@@ -1,0 +1,79 @@
+
+Chiller:Electric:EIR,
+  CoolSysPrimary Chiller,  !- Name
+  Autosize,                !- Reference Capacity {W}
+  3.2,                     !- Reference COP {W/W}
+  6.67,                    !- Reference Leaving Chilled Water Temperature {C}
+  29.4,                    !- Reference Entering Condenser Fluid Temperature {C}
+  Autosize,                !- Reference Chilled Water Flow Rate {m3/s}
+  Autosize,                !- Reference Condenser Fluid Flow Rate {m3/s}
+  Main Chiller RecipCapFT, !- Cooling Capacity Function of Temperature Curve Name
+  Main Chiller RecipEIRFT, !- Electric Input to Cooling Output Ratio Function of Temperature Curve Name
+  Main Chiller RecipEIRFPLR,  !- Electric Input to Cooling Output Ratio Function of Part Load Ratio Curve Name
+  0,                       !- Minimum Part Load Ratio
+  1,                       !- Maximum Part Load Ratio
+  1,                       !- Optimum Part Load Ratio
+  0.25,                    !- Minimum Unloading Ratio
+  CoolSysPrimary Pump-CoolSysPrimary ChillerNode,  !- Chilled Water Inlet Node Name
+  CoolSysPrimary Supply Equipment Outlet Node,  !- Chilled Water Outlet Node Name
+  CoolSysPrimary Chiller Water Inlet Node,  !- Condenser Inlet Node Name
+  CoolSysPrimary Chiller Water Outlet Node,  !- Condenser Outlet Node Name
+  WaterCooled,             !- Condenser Type
+  ,                        !- Condenser Fan Power Ratio {W/W}
+  1,                       !- Fraction of Compressor Electric Consumption Rejected by Condenser
+  5,                       !- Leaving Chilled Water Lower Temperature Limit {C}
+  NotModulated,            !- Chiller Flow Mode
+  0.0;                     !- Design Heat Recovery Water Flow Rate {m3/s}
+
+! Cooling Capacity Function of Temperature Curve for open or hermetic water-cooled reciprocating chillers
+! Same as DOE-2.1E HERM-REC-CAP-FT (CCAPT4) and OPEN-REC-CAP-FT (CCAPT2)
+
+Curve:Biquadratic,
+  Main Chiller RecipCapFT, !- Name
+  0.507883,                !- Coefficient1 Constant
+  0.145228,                !- Coefficient2 x
+  -0.00625644,             !- Coefficient3 x**2
+  -0.0011178,              !- Coefficient4 y
+  -0.0001296,              !- Coefficient5 y**2
+  -0.00028188,             !- Coefficient6 x*y
+  5,                       !- Minimum Value of x
+  10,                      !- Maximum Value of x
+  24,                      !- Minimum Value of y
+  35,                      !- Maximum Value of y
+  ,                        !- Minimum Curve Output
+  ,                        !- Maximum Curve Output
+  Temperature,             !- Input Unit Type for X
+  Temperature,             !- Input Unit Type for Y
+  Dimensionless;           !- Output Unit Type
+
+! Energy Input to Cooling Output Ratio Function of Temperature Curve for open or hermetic water-cooled reciprocating chillers
+! Same as DOE-2.1E HERM-REC-EIR-FT (EIRT4) and OPEN-REC-EIR-FT (EIRT2)
+
+Curve:Biquadratic,
+  Main Chiller RecipEIRFT, !- Name
+  1.03076,                 !- Coefficient1 Constant
+  -0.103536,               !- Coefficient2 x
+  0.00710208,              !- Coefficient3 x**2
+  0.0093186,               !- Coefficient4 y
+  0.00031752,              !- Coefficient5 y**2
+  -0.00104328,             !- Coefficient6 x*y
+  5,                       !- Minimum Value of x
+  10,                      !- Maximum Value of x
+  24,                      !- Minimum Value of y
+  35,                      !- Maximum Value of y
+  ,                        !- Minimum Curve Output
+  ,                        !- Maximum Curve Output
+  Temperature,             !- Input Unit Type for X
+  Temperature,             !- Input Unit Type for Y
+  Dimensionless;           !- Output Unit Type
+
+! Energy Input to Cooling Output Ratio Function of Part Load Ratio Curve for open or hermetic water-cooled reciprocating chillers
+! Same as DOE-2.1E HERM-REC-EIR-FPLR (EIRPLR4) and OPEN-REC-EIR-FPLR (EIRPLR2)
+
+Curve:Quadratic,
+  Main Chiller RecipEIRFPLR,  !- Name
+  0.088065,                !- Coefficient1 Constant
+  1.137742,                !- Coefficient2 x
+  -0.225806,               !- Coefficient3 x**2
+  0,                       !- Minimum Value of x
+  1;                       !- Maximum Value of x
