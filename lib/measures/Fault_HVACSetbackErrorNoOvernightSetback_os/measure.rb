@@ -109,7 +109,7 @@ class HVACSetbackErrorNoOvernightSetback < OpenStudio::Ruleset::ModelUserScript
     air_loops = []
 
     if dayofweek == $not_faulted
-      runner.registerAsNotApplicable('Measure HVACSetbackErrorNoOvernightSetback not run')
+      runner.registerAsNotApplicable('Measure Fault_HVACSetbackErrorNoOvernightSetback_os not run')
     else
       start_month = runner.getStringArgumentValue('start_month', user_arguments)
       end_month = runner.getStringArgumentValue('end_month', user_arguments)

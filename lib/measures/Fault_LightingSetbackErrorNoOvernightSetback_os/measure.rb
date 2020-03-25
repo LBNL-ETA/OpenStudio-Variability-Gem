@@ -102,7 +102,7 @@ class LightingSetbackErrorNoOvernightSetback < OpenStudio::Ruleset::ModelUserScr
     # get inputs
     dayofweek = runner.getStringArgumentValue('dayofweek', user_arguments)
     if dayofweek == $not_faulted
-      runner.registerAsNotApplicable('Measure LightingSetbackErrorNoOvernightSetback not run')
+      runner.registerAsNotApplicable('Measure Fault_LightingSetbackErrorNoOvernightSetback_os not run')
     else
       start_month = runner.getStringArgumentValue('start_month', user_arguments)
       end_month = runner.getStringArgumentValue('end_month', user_arguments)

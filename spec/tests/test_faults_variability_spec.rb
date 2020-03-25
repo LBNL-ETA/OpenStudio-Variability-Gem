@@ -50,13 +50,16 @@ RSpec.describe OpenStudio::Variability do
   # Spec examples for variability
   puts 'Testing specs beginning here...'
 
-  it 'should run demand response test with variability measures' do
+  it 'should run multiple simulation tests with variability measures' do
     OpenStudio::Extension::Extension::DO_SIMULATIONS = true
-    gem_root_path = File.expand_path("../..", Dir.pwd)
 
+    v_osm_paths = []
+    gem_root_path = File.expand_path("../..", Dir.pwd)
     spec_folder_path = File.join(gem_root_path, 'spec')
     run_path = File.join(spec_folder_path, 'test_runs', "run_#{Time.now.strftime("%Y%m%d_%H%M%S")}")
-    osm_path = File.join(spec_folder_path, 'seed_models/example_small_office.osm')
+    v_osm_paths << File.join(spec_folder_path, 'seed_models/example_small_office.osm')
+    v_osm_paths << File.join(spec_folder_path, 'seed_models/example_medium_office.osm')
+    v_osm_paths << File.join(spec_folder_path, 'seed_models/example_large_office.osm')
     epw_path = File.join(spec_folder_path, 'seed_models/Chicago_TMY3.epw')
 
     measures_path = File.join(gem_root_path, 'lib/measures')
@@ -68,24 +71,21 @@ RSpec.describe OpenStudio::Variability do
         other_example_measures_path
     ]
 
-    successful = test_case(osm_path, epw_path, v_measure_paths, run_path)
-    expect(successful).to be true
+    v_test_measures = ['Fault_AirHandlingUnitFanMotorDegradation_ep', 'Fault_BiasedEconomizerSensorMixedT_ep']
+
+    hash_test_result = test_individual_measure(v_osm_paths, epw_path, v_measure_paths, run_path, v_test_measures)
+    puts '==== Test Summary ==='
+    puts hash_test_result
+
   end
 
-  def test_case(seed_osm_path, epw_path, v_measure_paths, run_path)
-
+  def test_individual_measure(v_seed_osm_paths, epw_path, v_measure_paths, run_path, v_measure_names, max_n_parallel_run = 4)
+    # Get seed model
     unless File.directory?(run_path)
       FileUtils.mkdir_p(run_path)
     end
 
-    v_measure_steps_raw = [
-        {
-            "measure_type" => "EnergyPlus",
-            "measure_content" => {
-                "measure_dir_name" => "Fault_AirHandlingUnitFanMotorDegradation_ep",
-                "measure_arguments" => {},
-            }
-        },
+    v_measure_steps_base = [
         {
             "measure_type" => "OpenStudio",
             "measure_content" => {
@@ -128,20 +128,59 @@ RSpec.describe OpenStudio::Variability do
             }
         },
     ]
-    v_measure_steps = order_measures(v_measure_steps_raw)
+    hash_test_result = {}
 
-    out_osw_path = File.join(run_path, 'test_run.osw')
-    create_workflow(seed_osm_path, epw_path, v_measure_paths, v_measure_steps, out_osw_path)
-    runner = OpenStudio::Extension::Runner.new(run_path)
-    runner.run_osw(out_osw_path, run_path)
+    v_measure_names.each do |measure_name|
+      # Test all measures one by one and record the status
+      hash_test_result[measure_name] = {}
+      measure_type_short = measure_name.split('_')[-1]
+      if measure_type_short == 'ep'
+        str_measure_type = 'Energyplus'
+      elsif measure_type_short == 'os'
+        str_measure_type = 'OpenStudio'
+      end
+      hash_measure_temp = {
+          "measure_type" => str_measure_type,
+          "measure_content" => {
+              "measure_dir_name" => measure_name,
+              "arguments" => {
+              }
+          }
+      }
+      v_measure_steps_base = v_measure_steps_base.insert(0, hash_measure_temp)
+      v_measure_steps = order_measures(v_measure_steps_base)
+      v_osws = []
+      v_seed_osm_paths.each do |seed_osm_path|
+        seed_osm_name = File.basename(seed_osm_path, '.osm')
+        out_osw_path = File.join(run_path, "run_#{seed_osm_name}/#{seed_osm_name}.osw")
+        unless File.directory?(File.dirname(out_osw_path))
+          FileUtils.mkdir_p(File.dirname(out_osw_path))
+        end
+        create_workflow(seed_osm_path, epw_path, v_measure_paths, v_measure_steps, out_osw_path)
+        v_osws << out_osw_path
+      end
 
-    # Check if simulation is completed successfully
-    successful = false
-    sql_file = File.join(File.dirname(out_osw_path), 'eplusout.sql')
-    puts "Simulation not completed successfully for file: #{out_osw_path}" unless File.exist?(sql_file)
-    successful = true if File.exist?(sql_file)
-    return successful
+      puts '= ' * 30
+      puts "Testing => #{measure_name}"
+      puts v_osws
+
+      # Run the workflow
+      runner = OpenStudio::Extension::Runner.new(run_path)
+      runner.run_osws(v_osws, max_n_parallel_run) # Maximum number of parallel run allowed
+
+      # Summarize the result
+      v_osws.each do |osw_path|
+        report_file = File.join(File.dirname(osw_path), 'reports', 'eplustbl.html')
+        osm_name = File.basename(osw_path, '.osw')
+        hash_test_result[measure_name][osm_name] = File.exist?(report_file)
+      end
+    end
+
+    File.write(File.join(run_path, 'test_result.json'), hash_test_result.to_json)
+
+    hash_test_result
   end
+
 
   def order_measures(v_hash_measure_steps)
     v_measure_os = []
@@ -160,6 +199,7 @@ RSpec.describe OpenStudio::Variability do
     return v_measure_steps_ordered
   end
 
+
   def create_workflow(seed_osm_path, weather_file_path, measure_paths, v_measure_steps, out_osw_path)
     hash_osw = {
         "seed_file" => seed_osm_path,
@@ -170,6 +210,18 @@ RSpec.describe OpenStudio::Variability do
     File.open(out_osw_path, "w") do |f|
       f.write(JSON.pretty_generate(hash_osw))
     end
+  end
+
+  def load_osm(path_str)
+    translator = OpenStudio::OSVersion::VersionTranslator.new
+    path = OpenStudio::Path.new(path_str)
+    model = translator.loadModel(path)
+    if model.empty?
+      raise "Input #{path_str} is not valid, please check."
+    else
+      model = model.get
+    end
+    return model
   end
 
 end

@@ -226,13 +226,13 @@ class BiasedEconomizerSensorMixedT < OpenStudio::Ruleset::WorkspaceUserScript
     
     #give an error for the name if no RTU is changed
     if no_econ_found
-      runner.registerError("Measure BiasedEconomizerSensorMixedT cannot find "+econ_choice+". Exiting......")
+      runner.registerError("Measure Fault_BiasedEconomizerSensorMixedT_ep cannot find "+econ_choice+". Exiting......")
       return false
     elsif applicable
       # report final condition of workspace
       runner.registerFinalCondition("Imposed Sensor Bias on "+econ_choice+".")
     else
-      runner.registerAsNotApplicable("BiasedEconomizerSensorMixedT is not running for "+econ_choice+" because of inapplicability. Skipping......")
+      runner.registerAsNotApplicable("Fault_BiasedEconomizerSensorMixedT_ep is not running for "+econ_choice+" because of inapplicability. Skipping......")
     end
 
     return true

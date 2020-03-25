@@ -158,7 +158,7 @@ class SupplyAirDuctLeakages < OpenStudio::Ruleset::WorkspaceUserScript
             end
           end
           unless zonesplitterchange
-            runner.registerError("Measure SupplyAirDuctLeakages cannot find the AirLoopHVAC:ZoneSplitter that contains #{airterminal_choice}. Exiting......")
+            runner.registerError("Measure Fault_SupplyAirDuctLeakages_ep cannot find the AirLoopHVAC:ZoneSplitter that contains #{airterminal_choice}. Exiting......")
             return false
           end
           # create new AirTerminal:SingleDuct:ConstantVolume:Reheat, Coil:Heating:Electric and ZoneHVAC:AirDistributionUnit objects
@@ -229,7 +229,7 @@ class SupplyAirDuctLeakages < OpenStudio::Ruleset::WorkspaceUserScript
             end
           end
           unless equiplistchange
-            runner.registerError("Measure SupplyAirDuctLeakages cannot find the ZoneHVAC:EquipmentList that contains #{airterminal_choice}. Exiting......")
+            runner.registerError("Measure Fault_SupplyAirDuctLeakages_ep cannot find the ZoneHVAC:EquipmentList that contains #{airterminal_choice}. Exiting......")
             return false
           end
           string_objects = []
@@ -367,7 +367,7 @@ class SupplyAirDuctLeakages < OpenStudio::Ruleset::WorkspaceUserScript
 
       # give an error for the name if no RTU is changed
       if !airterminal_changed
-        runner.registerError("Measure SupplyAirDuctLeakages cannot find #{airterminal_choice}. Exiting......")
+        runner.registerError("Measure Fault_SupplyAirDuctLeakages_ep cannot find #{airterminal_choice}. Exiting......")
         airterminals_msg = 'Only AirTerminals '
         existing_airterminals.each do |existing_airterminal|
           airterminals_msg = "#{airterminals_msg}#{existing_airterminal}, "
@@ -376,7 +376,7 @@ class SupplyAirDuctLeakages < OpenStudio::Ruleset::WorkspaceUserScript
         runner.registerError(airterminals_msg)
         return false
       elsif !adu_changed
-        runner.registerError("Measure SupplyAirDuctLeakages cannot find the ZoneHVAC:AirDistributionUnit that contains #{airterminal_choice}. Exiting......")
+        runner.registerError("Measure Fault_SupplyAirDuctLeakages_ep cannot find the ZoneHVAC:AirDistributionUnit that contains #{airterminal_choice}. Exiting......")
         return false
       elsif !ratio_set
         runner.registerError("Leakage ratio cannot be assigned to #{airterminal_choice} with the ZoneHVAC:AirDistributionUnit object having #{field_num} fields. Exiting......")
@@ -386,7 +386,7 @@ class SupplyAirDuctLeakages < OpenStudio::Ruleset::WorkspaceUserScript
       # report final condition of workspace
       runner.registerFinalCondition("Imposed performance degradation on #{airterminal_choice}.")
     else
-      runner.registerAsNotApplicable("SupplyAirDuctLeakages is not running for #{airterminal_choice}. Skipping......")
+      runner.registerAsNotApplicable("Fault_SupplyAirDuctLeakages_ep is not running for #{airterminal_choice}. Skipping......")
     end
 
     return true

@@ -277,7 +277,6 @@ RSpec.describe OpenStudio::Variability do
     return successful
   end
 
-
   def order_measures(v_hash_measure_steps)
     v_measure_os = []
     v_measure_ep = []

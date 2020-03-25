@@ -9,6 +9,7 @@
 
 # 11/18/2017 Lighting Setback Error measure developed based on HVAC Setback Error measure
 # codes within ######## are modified parts
+
 require 'date'
 require 'openstudio-standards' # this is used to get min/max values from thermostat schedules for reporting purposes
 
@@ -20,16 +21,16 @@ include OsLib_FDD
 include OsLib_FDD_light
 
 # start the measure
-class LightingSetbackErrorEarlyTermination < OpenStudio::Ruleset::ModelUserScript
+class LightingSetbackErrorDelayedOnset < OpenStudio::Ruleset::ModelUserScript
   # define the name that a user will see, this method may be deprecated as
   # the display name in PAT comes from the name field in measure.xml
   def name
-    return 'Lighting Setback Error: Early Termination'
+    return 'Lighting Setback Error: Delayed Onset'
   end
 
   # simple human readable description
   def description
-    return "Lighting should be turned off or at least reduced during unoccupied hours. However, some commissioning studies have found noticeable lighting energy use at night either because lighting schedules are improperly configured or occupants forget to turn off lights when vacating a building. This fault is categorized as a fault that occur in the lighting system (controller) during the operation stage. This fault measure is based on a physical model where certain parameter(s) is changed in EnergyPlus to mimic the faulted operation; thus simulates the effect of the lighting setback being terminated earlier during unoccupied hours by modifying the Schedule:Compact object in EnergyPlus assigned to lighting schedules. The fault intensity (F) is defined as the early termination of overnight lighting setback (in hours)."
+    return "Lighting should be turned off or at least reduced during unoccupied hours. However, some commissioning studies have found noticeable lighting energy use at night either because lighting schedules are improperly configured or occupants forget to turn off lights when vacating a building. This fault is categorized as a fault that occur in the lighting system (controller) during the operation stage. This fault measure is based on a physical model where certain parameter(s) is changed in EnergyPlus to mimic the faulted operation; thus simulates the effect of lighting setback being delayed until unoccupied hours by modifying the Schedule:Compact object in EnergyPlus assigned to lighting schedules. The fault intensity (F) is defined as the delay in the onset of overnight lighting setback (in hours)."
   end
 
   # detailed human readable description about how to use the measure
@@ -44,7 +45,7 @@ class LightingSetbackErrorEarlyTermination < OpenStudio::Ruleset::ModelUserScrip
     # make choice argument for thermal zone
     zone_handles, zone_display_names = pass_zone(model, $allzonechoices)
     zone = OpenStudio::Ruleset::OSArgument.makeChoiceArgument(
-        'zone', zone_display_names, zone_display_names, true
+      'zone', zone_display_names, zone_display_names, true
     )
     zone.setDefaultValue("* All Zones *")
     zone.setDisplayName("Zone. Choose #{$allzonechoices} if you want to impose the fault in all zones")
@@ -56,14 +57,14 @@ class LightingSetbackErrorEarlyTermination < OpenStudio::Ruleset::ModelUserScrip
     end
 
     start_month = OpenStudio::Ruleset::OSArgument.makeChoiceArgument(
-        'start_month', osmonths, true
+      'start_month', osmonths, true
     )
     start_month.setDisplayName('Fault active start month')
     start_month.setDefaultValue($months[0])
     args << start_month
 
     end_month = OpenStudio::Ruleset::OSArgument.makeChoiceArgument(
-        'end_month', osmonths, true
+      'end_month', osmonths, true
     )
     end_month.setDisplayName('Fault active end month')
     end_month.setDefaultValue($months[11])
@@ -77,7 +78,7 @@ class LightingSetbackErrorEarlyTermination < OpenStudio::Ruleset::ModelUserScrip
     osdaysofweeks << $weekdaysonly
     osdaysofweeks << $weekendonly
     dayofweek = OpenStudio::Ruleset::OSArgument.makeChoiceArgument(
-        'dayofweek', osdaysofweeks, true
+      'dayofweek', osdaysofweeks, true
     )
     dayofweek.setDisplayName('Day of the week')
     dayofweek.setDefaultValue($all_days)
@@ -85,9 +86,9 @@ class LightingSetbackErrorEarlyTermination < OpenStudio::Ruleset::ModelUserScrip
 
     ext_hr = OpenStudio::Ruleset::OSArgument.makeDoubleArgument('ext_hr', true)
     ext_hr.setDisplayName(
-        'Number of operating hours extended to the morning.'
+      'Number of operating hours extended to the evening.'
     )
-    ext_hr.setDefaultValue(1)  # default leakage level to be 1 hour
+    ext_hr.setDefaultValue(1)
     args << ext_hr
 
     return args
@@ -111,9 +112,9 @@ class LightingSetbackErrorEarlyTermination < OpenStudio::Ruleset::ModelUserScrip
       start_month, end_month, thermalzones, dayofweek = \
         get_thermostat_inputs(model, runner, user_arguments)
 
-      # create empty has to hold setpoint values across zones
+      # create empty has to poulate when loop through zones
       setpoint_values = create_initial_final_setpoint_values_hash
-
+		
       ###########################################################################
       ###########################################################################
       zone = runner.getStringArgumentValue('zone', user_arguments)
@@ -122,7 +123,7 @@ class LightingSetbackErrorEarlyTermination < OpenStudio::Ruleset::ModelUserScrip
       # apply fault
       lights.each do |light|
 	next if not light.size > 0
-        results = applyfaulttolight_no_setback_ext_hr_morning(light, ext_hr, start_month, end_month, dayofweek, runner, setpoint_values, model)
+        results = applyfaulttolight_no_setback_ext_hr_evening(light, ext_hr, start_month, end_month, dayofweek, runner, setpoint_values, model)
 
         # populate hash for min max values across zones
         if not results == false
@@ -143,7 +144,7 @@ class LightingSetbackErrorEarlyTermination < OpenStudio::Ruleset::ModelUserScrip
 
     else
       runner.registerAsNotApplicable('Zero hour extension in Measure ' \
-                                     'LightingSetbackErrorEarlyTermination. ' \
+                                     'Fault_LightingSetbackErrorDelayedOnset_os. ' \
                                      'Exiting......')
     end
 
@@ -152,4 +153,4 @@ class LightingSetbackErrorEarlyTermination < OpenStudio::Ruleset::ModelUserScrip
 end # end the measure
 
 # this allows the measure to be use by the application
-LightingSetbackErrorEarlyTermination.new.registerWithApplication
+LightingSetbackErrorDelayedOnset.new.registerWithApplication
