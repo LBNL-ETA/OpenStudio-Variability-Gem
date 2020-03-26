@@ -25,12 +25,12 @@ Install Devkit using the [mingw64](https://dl.bintray.com/oneclick/rubyinstaller
 Install Devkit and change directory to its main folder. 
 
 ```ruby
-$ Ruby dk:rb init
+$ Ruby dk.rb init
 ```
 
 Make sure the ruby you installed is in config.yml, which will allow Devkit to enhance it.
 ```ruby
-$ Ruby dk:rb install
+$ Ruby dk.rb install
 ```
 
 Install OpenStudio v2.9.1.  Create a file ```C:\your-ruby-2.2.4\lib\ruby\site_ruby\openstudio.rb``` and point it to your OpenStudio installation by editing the contents.  E.g.:
