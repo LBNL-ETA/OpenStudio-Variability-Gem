@@ -31,8 +31,8 @@ OS:SimulationControl,
   Yes,                                    !- Do Zone Sizing Calculation
   Yes,                                    !- Do System Sizing Calculation
   Yes,                                    !- Do Plant Sizing Calculation
-  No,                                    !- Run Simulation for Sizing Periods
-  Yes,                                     !- Run Simulation for Weather File Run Periods
+  No,                                     !- Run Simulation for Sizing Periods
+  Yes,                                    !- Run Simulation for Weather File Run Periods
   0.04,                                   !- Loads Convergence Tolerance Value
   0.2,                                    !- Temperature Convergence Tolerance Value {deltaC}
   FullInteriorAndExterior,                !- Solar Distribution
