@@ -71,7 +71,44 @@ RSpec.describe OpenStudio::Variability do
         other_example_measures_path
     ]
 
-    v_test_measures = ['Fault_AirHandlingUnitFanMotorDegradation_ep', 'Fault_BiasedEconomizerSensorMixedT_ep']
+    v_test_measures = [
+        'DR_add_ice_storage_lgoffice_os',
+        'DR_GTA_os',
+        'DR_Lighting_os',
+        'DR_MELs_os',
+        'DR_Precool_Preheat_os',
+        'Fault_AirHandlingUnitFanMotorDegradation_ep',
+        'Fault_BiasedEconomizerSensorMixedT_ep',
+        'Fault_BiasedEconomizerSensorOutdoorRH_ep',
+        'Fault_BiasedEconomizerSensorOutdoorT_ep',
+        'Fault_BiasedEconomizerSensorReturnRH_ep',
+        'Fault_BiasedEconomizerSensorReturnT_ep',
+        'Fault_CondenserFanDegradation_ep',
+        'Fault_CondenserFouling_ep',
+        'Fault_DuctFouling_os',
+        'Fault_EconomizerOpeningStuck_os',
+        'Fault_EvaporatorFouling_ep',
+        'Fault_ExcessiveInfiltration_os',
+        'Fault_HVACSetbackErrorDelayedOnset_os',
+        'Fault_HVACSetbackErrorEarlyTermination_os',
+        'Fault_HVACSetbackErrorNoOvernightSetback_os',
+        'Fault_ImproperTimeDelaySettingInOccupancySensors_os',
+        'Fault_LightingSetbackErrorDelayedOnset_os',
+        'Fault_LightingSetbackErrorEarlyTermination_os',
+        'Fault_LightingSetbackErrorNoOvernightSetback_os',
+        'Fault_LiquidLineRestriction_ep',
+        'Fault_NonStandardCharging_os',
+        'Fault_OversizedEquipmentAtDesign_os',
+        'Fault_PresenceOfNonCondensable_ep',
+        'Fault_ReturnAirDuctLeakages_ep',
+        'Fault_SupplyAirDuctLeakages_ep',
+        'Fault_ThermostatBias_os',
+        'Fault_thermostat_offset_ep',
+        'Retrofit_equipment_os',
+        'Retrofit_exterior_wall_os',
+        'Retrofit_lighting_os',
+        'Retrofit_roof_ep'
+    ]
 
     hash_test_result = test_individual_measure(v_osm_paths, epw_path, v_measure_paths, run_path, v_test_measures)
     puts '==== Test Summary ==='
@@ -79,7 +116,7 @@ RSpec.describe OpenStudio::Variability do
 
   end
 
-  def test_individual_measure(v_seed_osm_paths, epw_path, v_measure_paths, run_path, v_measure_names, max_n_parallel_run = 4)
+  def test_individual_measure(v_seed_osm_paths, epw_path, v_measure_paths, run_path, v_measure_names, max_n_parallel_run = 3)
     # Get seed model
     unless File.directory?(run_path)
       FileUtils.mkdir_p(run_path)
@@ -131,11 +168,13 @@ RSpec.describe OpenStudio::Variability do
     hash_test_result = {}
 
     v_measure_names.each do |measure_name|
+      puts '+ ' * 30
+      puts measure_name
       # Test all measures one by one and record the status
       hash_test_result[measure_name] = {}
       measure_type_short = measure_name.split('_')[-1]
       if measure_type_short == 'ep'
-        str_measure_type = 'Energyplus'
+        str_measure_type = 'EnergyPlus'
       elsif measure_type_short == 'os'
         str_measure_type = 'OpenStudio'
       end
@@ -147,12 +186,17 @@ RSpec.describe OpenStudio::Variability do
               }
           }
       }
-      v_measure_steps_base = v_measure_steps_base.insert(0, hash_measure_temp)
-      v_measure_steps = order_measures(v_measure_steps_base)
+      v_measure_steps_temp = v_measure_steps_base.dup
+      v_measure_steps_temp = v_measure_steps_temp.insert(0, hash_measure_temp)
+      puts ' +' * 30
+      puts v_measure_steps_temp
+      puts ' +' * 30
+
+      v_measure_steps = order_measures(v_measure_steps_temp)
       v_osws = []
       v_seed_osm_paths.each do |seed_osm_path|
         seed_osm_name = File.basename(seed_osm_path, '.osm')
-        out_osw_path = File.join(run_path, "run_#{seed_osm_name}/#{seed_osm_name}.osw")
+        out_osw_path = File.join(run_path, measure_name,"run_#{seed_osm_name}/#{seed_osm_name}.osw")
         unless File.directory?(File.dirname(out_osw_path))
           FileUtils.mkdir_p(File.dirname(out_osw_path))
         end
