@@ -29,3 +29,4 @@ lib/measures/test_results/*
 
 # runner conf
 runner.conf
+spec/tests/temp_spec.rb
