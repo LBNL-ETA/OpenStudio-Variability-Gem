@@ -1,9 +1,9 @@
 # Openstudio Variability Gem
 
-This gem contains methods to introduce variabilities to extend core OpenStudio SDK. The term "variability" refers to changes in building systems and non-routine events, which are usually ignored in building energy modeling. Those non-routine events include:
-- Demand response (DR) events
-- Faulty operations
-- Building retrofit
+This gem contains methods to introduce variabilities to extend core OpenStudio SDK. The term "variability" refers to changes in building systems efficiency, operation, or controls, which are non-routine events. Those non-routine events include:
+- Demand response events
+- Faulty operations of HVAC systems
+- Building retrofit at any specific time of the year
 
 This gem is created based on [openstudio-extension-gem](https://github.com/NREL/openstudio-extension-gem). The contents and directory follow the same structure.
 
