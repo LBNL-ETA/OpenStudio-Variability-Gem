@@ -105,12 +105,3 @@ Simulation(s) will run in the ```...spec/test_runs``` folder.
 # Acknowledgement
 
 This repository is part of the deliverables from the DOE Energy Data Vault project.
-
-
-# Releasing
-
-* Update change log
-* Update version in `/lib/openstudio/openstudio-variability/version.rb`
-* Merge down to master
-* Release via github
-* run `rake release` from master
