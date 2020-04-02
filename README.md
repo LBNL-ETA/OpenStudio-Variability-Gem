@@ -7,6 +7,11 @@ This gem contains methods to introduce variabilities to extend core OpenStudio S
 
 This gem is created based on [openstudio-extension-gem](https://github.com/NREL/openstudio-extension-gem). The contents and directory follow the same structure.
 
+## Licence
+
+See license.txt for details.
+
+See [this disclaimer page](https://www.lbl.gov/disclaimers/) for more Privacy, Security, Copyright, Disclaimers, and Accessibility Information
 
 ## Installation
 
@@ -104,4 +109,4 @@ Simulation(s) will run in the ```...spec/test_runs``` folder.
 
 # Acknowledgement
 
-This repository is part of the deliverables from the DOE Energy Data Vault project.
+This repository is part of the deliverables from the DOE Energy Data Vault project. This research was supported by the Assistant Secretary for Energy Efficiency and Renewable Energy, Office of Building Technologies of the United States Department of Energy, under Contract No. DE-AC02-05CH11231.
