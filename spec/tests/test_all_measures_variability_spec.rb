@@ -122,7 +122,7 @@ RSpec.describe OpenStudio::Variability do
         'Fault_ThermostatBias_os',
         'Fault_thermostat_offset_ep',
         'Retrofit_equipment_os',
-        'Retrofit_exterior_wall_os',
+        'Retrofit_exterior_wall_ep',
         'Retrofit_lighting_os',
         'Retrofit_roof_ep'
     ]
