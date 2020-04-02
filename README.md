@@ -9,7 +9,7 @@ This gem is created based on [openstudio-extension-gem](https://github.com/NREL/
 
 ## License
 
-See license.txt for details.
+See [license.txt](License.txt) for details.
 
 See [this disclaimer page](https://www.lbl.gov/disclaimers/) for more Privacy, Security, Copyright, Disclaimers, and Accessibility Information
 
