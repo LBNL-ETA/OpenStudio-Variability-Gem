@@ -1,5 +1,5 @@
 # *******************************************************************************
-# OpenStudio(Retrofit_equipment_os), Copyright (c) 2008-2018, Alliance for Sustainable Energy, LLC.
+# OpenStudio(R), Copyright (c) 2008-2018, Alliance for Sustainable Energy, LLC.
 # All rights reserved.
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -37,7 +37,7 @@
 class PreCoolingAndHeating < OpenStudio::Measure::ModelMeasure
   # define the name that a user will see
   def name
-    return 'DR Precooling Preheating'
+    return 'Pre Cooling & Heating by Certain Time Period and Thermostat Setpoint'
   end
 
   # human readable description
@@ -60,45 +60,30 @@ class PreCoolingAndHeating < OpenStudio::Measure::ModelMeasure
     cooling_adjustment.setDefaultValue(-2.0)
     args << cooling_adjustment
 
-    # make an argument for the start time of pre-cooling/heating
-    starttime_cooling = OpenStudio::Measure::OSArgument.makeStringArgument('starttime_cooling', true)
-    starttime_cooling.setDisplayName('Start Time for Pre-cooling')
-    starttime_cooling.setDefaultValue('11:59:00')
-    args << starttime_cooling
-
-    # make an argument for the end time of pre-cooling/heating
-    endtime_cooling = OpenStudio::Measure::OSArgument.makeStringArgument('endtime_cooling', true)
-    endtime_cooling.setDisplayName('End Time for Pre-cooling')
-    endtime_cooling.setDefaultValue('15:59:00')
-    args << endtime_cooling
-
+    
     # make an argument for adjustment to heating setpoint
     heating_adjustment = OpenStudio::Measure::OSArgument.makeDoubleArgument('heating_adjustment', true)
     heating_adjustment.setDisplayName('Degrees Fahrenheit to Adjust heating Setpoint By')
-    heating_adjustment.setDefaultValue(2.0)
+    heating_adjustment.setDefaultValue(0)
     args << heating_adjustment
 
-    starttime_heating = OpenStudio::Measure::OSArgument.makeStringArgument('starttime_heating', true)
-    starttime_heating.setDisplayName('Start Time for Pre-heating')
-    starttime_heating.setDefaultValue('0:01:00')
-    args << starttime_heating
+    # make an argument for the start time of pre-cooling/heating
+    starttime = OpenStudio::Measure::OSArgument.makeStringArgument('starttime', true)
+    starttime.setDisplayName('Start Time for Pre-cooling/heating')
+    starttime.setDefaultValue('12:00:00')
+    args << starttime
 
     # make an argument for the end time of pre-cooling/heating
-    endtime_heating = OpenStudio::Measure::OSArgument.makeStringArgument('endtime_heating', true)
-    endtime_heating.setDisplayName('End Time for Pre-heating')
-    endtime_heating.setDefaultValue('4:59:00')
-    args << endtime_heating
+    endtime = OpenStudio::Measure::OSArgument.makeStringArgument('endtime', true)
+    endtime.setDisplayName('End Time for Pre-cooling/heating')
+    endtime.setDefaultValue('14:59:00')
+    args << endtime
 
     # make an argument for adjustment to heating setpoint
     alter_design_days = OpenStudio::Measure::OSArgument.makeBoolArgument('alter_design_days', true)
     alter_design_days.setDisplayName('Alter Design Day Thermostats')
     alter_design_days.setDefaultValue(false)
     args << alter_design_days
-
-    auto_date = OpenStudio::Measure::OSArgument.makeBoolArgument('auto_date', true)
-    auto_date.setDisplayName('Enable Climate-specific Periods Setting ?')
-    auto_date.setDefaultValue(true)
-    args << auto_date
 
     return args
   end
@@ -116,123 +101,10 @@ class PreCoolingAndHeating < OpenStudio::Measure::ModelMeasure
     cooling_adjustment = runner.getDoubleArgumentValue('cooling_adjustment', user_arguments)
     heating_adjustment = runner.getDoubleArgumentValue('heating_adjustment', user_arguments)
     alter_design_days = runner.getBoolArgumentValue('alter_design_days', user_arguments)
-    starttime_cooling = runner.getStringArgumentValue('starttime_cooling', user_arguments)
-    endtime_cooling = runner.getStringArgumentValue('endtime_cooling', user_arguments)
-    starttime_heating = runner.getStringArgumentValue('starttime_heating', user_arguments)
-    endtime_heating = runner.getStringArgumentValue('endtime_heating', user_arguments)
-    auto_date = runner.getBoolArgumentValue('auto_date', user_arguments)
-
-    winter_start_month1 = 1
-    winter_end_month1 = 5
-    summer_start_month = 6
-    summer_end_month = 8
-    winter_start_month2 = 9
-    winter_end_month2 = 12
-
-    ######### GET CLIMATE ZONES ################
-    if auto_date
-      ashraeClimateZone = ''
-      #climateZoneNUmber = ''
-      climateZones = model.getClimateZones
-      climateZones.climateZones.each do |climateZone|
-        if climateZone.institution == 'ASHRAE'
-          ashraeClimateZone = climateZone.value
-          runner.registerInfo("Using ASHRAE Climate zone #{ashraeClimateZone}.")
-        end
-      end
-
-      if ashraeClimateZone == '' # should this be not applicable or error?
-        runner.registerError("Please assign an ASHRAE Climate Zone to your model using the site tab in the OpenStudio application. The measure can't make AEDG recommendations without this information.")
-        return false # note - for this to work need to check for false in measure.rb and add return false there as well.
-      # else
-      #   climateZoneNumber = ashraeClimateZone.split(//).first
-      end
-      # #runner.registerInfo("CLIMATE ZONE #{ashraeClimateZone}. Right now does not do anything.")
-      #     if !['1', '2', '3', '4', '5', '6', '7', '8'].include? climateZoneNumber
-      #       runner.registerError('ASHRAE climate zone number is not within expected range of 1 to 8.')
-      #       return false # note - for this to work need to check for false in measure.rb and add return false there as well.
-      #     end
-
-  if ashraeClimateZone == '2A'
-        starttime_cooling = '11:59:00'
-        endtime_cooling = '15:59:00'
-        starttime_heating = '11:59:00'
-        endtime_heating = '15:59:00'
-      elsif ashraeClimateZone == '2B'
-        starttime_cooling = '2:59:00'
-        endtime_cooling = '6:59:00'
-        starttime_heating = '11:59:00'
-        endtime_heating = '15:59:00'
-      elsif ashraeClimateZone == '3A'
-        starttime_cooling = '2:59:00'
-        endtime_cooling = '6:59:00'
-        starttime_heating = '11:59:00'
-        endtime_heating = '15:59:00'
-      elsif ashraeClimateZone == '3B'
-        starttime_cooling = '2:59:00'
-        endtime_cooling = '6:59:00'
-        starttime_heating = '11:59:00'
-        endtime_heating = '15:59:00'
-      elsif ashraeClimateZone == '3C'
-        starttime_cooling = '10:59:00'
-        endtime_cooling = '14:59:00'
-        starttime_heating = '10:59:00'
-        endtime_heating = '14:59:00'
-      elsif ashraeClimateZone == '4A'
-        starttime_cooling = '2:59:00'
-        endtime_cooling = '6:59:00'
-        starttime_heating = '9:59:00'
-        endtime_heating = '13:59:00'
-      elsif ashraeClimateZone == '4B'
-        starttime_cooling = '2:59:00'
-        endtime_cooling = '6:59:00'
-        starttime_heating = '9:59:00'
-        endtime_heating = '13:59:00'
-      elsif ashraeClimateZone == '4C'
-        starttime_cooling = '0:59:00'
-        endtime_cooling = '4:59:00'
-        starttime_heating = '10:59:00'
-        endtime_heating = '14:59:00'
-      elsif ashraeClimateZone == '5A'
-        starttime_cooling = '2:59:00'
-        endtime_cooling = '6:59:00'
-        starttime_heating = '9:59:00'
-        endtime_heating = '13:59:00'
-      elsif ashraeClimateZone == '5B'
-        starttime_cooling = '1:59:00'
-        endtime_cooling = '5:59:00'
-        starttime_heating = '10:59:00'
-        endtime_heating = '14:59:00'
-      elsif ashraeClimateZone == '5C'
-        starttime_cooling = '0:59:00'
-        endtime_cooling = '4:59:00'
-        starttime_heating = '10:59:00'
-        endtime_heating = '14:59:00'
-      elsif ashraeClimateZone == '6A'
-        starttime_cooling = '2:59:00'
-        endtime_cooling = '6:59:00'
-        starttime_heating = '1:59:00'
-        endtime_heating = '5:59:00'
-      elsif ashraeClimateZone == '6B'
-        starttime_cooling = '0:59:00'
-        endtime_cooling = '4:59:00'
-        starttime_heating = '10:59:00'
-        endtime_heating = '14:59:00'
-      elsif ashraeClimateZone == '7A'
-        starttime_cooling = '2:59:00'
-        endtime_cooling = '6:59:00'
-        starttime_heating = '1:59:00'
-        endtime_heating = '5:59:00'
-      end
-    end
-
-    if ashraeClimateZone == '6A'
-      cooling_adjustment = -1
-      heating_adjustment = 1
-    end
-
+    starttime = runner.getStringArgumentValue('starttime', user_arguments)
+    endtime = runner.getStringArgumentValue('endtime', user_arguments)
     
-    if starttime_cooling.to_f > endtime_cooling.to_f
+    if starttime.to_f > endtime.to_f
       runner.registerError('The end time should be larger than the start time.')
       return false
     end
@@ -259,127 +131,80 @@ class PreCoolingAndHeating < OpenStudio::Measure::ModelMeasure
     temperature_ip_unit = OpenStudio.createUnit('F').get
     temperature_si_unit = OpenStudio.createUnit('C').get
 
-    shift_time1 = OpenStudio::Time.new(starttime_cooling)
-    shift_time2 = OpenStudio::Time.new(endtime_cooling)
+    shift_time1 = OpenStudio::Time.new(starttime)
+    shift_time2 = OpenStudio::Time.new(endtime)
     shift_time3 = OpenStudio::Time.new(0,6,0,0)
-    shift_time4 = OpenStudio::Time.new(starttime_heating)
-    shift_time5 = OpenStudio::Time.new(endtime_heating)
-
-
     # define starting units
     cooling_adjustment_ip = OpenStudio::Quantity.new(cooling_adjustment, temperature_ip_unit)
     heating_adjustment_ip = OpenStudio::Quantity.new(heating_adjustment, temperature_ip_unit)
 
-
-    if ashraeClimateZone == '6A'
-        air_loop_schs = []
-        air_loops = model.getAirLoopHVACs
-        air_loops.each do |air_loop|
-          air_loop_sch = air_loop.availabilitySchedule
-          air_loop_schs << air_loop_sch
-          break
-        end
-
-        air_loop_schs.each do |air_loop_sch|
-          runner.registerInfo("Air Loop Schedule Name #{air_loop_sch.name.to_s}")      
-          schedule = air_loop_sch.to_ScheduleRuleset.get
-          default_rule = schedule.defaultDaySchedule
-          rules = schedule.scheduleRules
-          days_covered = Array.new(7, false)
-
-          rules.each do |rule|
-
-            summerStartMonth = OpenStudio::MonthOfYear.new(summer_start_month)
-            summerEndMonth = OpenStudio::MonthOfYear.new(summer_end_month)
-            summerStartDate = OpenStudio::Date.new(summerStartMonth, 1)
-            summerEndDate = OpenStudio::Date.new(summerEndMonth, 30)
-            
-            summer_rule = rule.clone(model).to_ScheduleRule.get
-            summer_rule.setStartDate(summerStartDate)
-            summer_rule.setEndDate(summerEndDate)
-
-            allDaysCovered(summer_rule, days_covered)
-
-            cloned_day_summer = rule.daySchedule.clone(model)
-            cloned_day_summer.setParent(summer_rule)
-
-            summer_day = summer_rule.daySchedule
-            summer_day = updateDaySchedule(summer_day, shift_time1, shift_time3, shift_time2)
-
-
-            winterStartMonth1 = OpenStudio::MonthOfYear.new(winter_start_month1)
-            winterEndMonth1 = OpenStudio::MonthOfYear.new(winter_end_month1)
-            winterStartDate1 = OpenStudio::Date.new(winterStartMonth1, 1)
-            winterEndDate1 = OpenStudio::Date.new(winterEndMonth1, 30)
-            winter_rule1 = rule
-            winter_rule1.setStartDate(winterStartDate1)
-            winter_rule1.setEndDate(winterEndDate1)
-            
-            cloned_day_winter = rule.daySchedule.clone(model)
-            cloned_day_winter.setParent(winter_rule1)
-
-            winter_day1 = winter_rule1.daySchedule
-            winter_day1 = updateDaySchedule(winter_day1, shift_time4, shift_time3, shift_time5)
-
-            winterStartMonth2 = OpenStudio::MonthOfYear.new(winter_start_month2)
-            winterEndMonth2 = OpenStudio::MonthOfYear.new(winter_end_month2)
-            winterStartDate2 = OpenStudio::Date.new(winterStartMonth2, 1)
-            winterEndDate2 = OpenStudio::Date.new(winterEndMonth2, 30)
-            winter_rule2 = winter_rule1.clone(model).to_ScheduleRule.get
-            winter_rule2.setStartDate(winterStartDate2)
-            winter_rule2.setEndDate(winterEndDate2)
-            cloned_day_winter2 = winter_day1.clone(model)
-            cloned_day_winter2.setParent(winter_rule2)
-          end
-
-          if days_covered.include?(false)
-            summerStartMonth = OpenStudio::MonthOfYear.new(summer_start_month)
-            summerEndMonth = OpenStudio::MonthOfYear.new(summer_end_month)
-            summerStartDate = OpenStudio::Date.new(summerStartMonth, 1)
-            summerEndDate = OpenStudio::Date.new(summerEndMonth, 30)
-            
-            summer_rule = OpenStudio::Model::ScheduleRule.new(schedule)
-            summer_rule.setStartDate(summerStartDate)
-            summer_rule.setEndDate(summerEndDate)
-
-            coverSomeDays(summer_rule, days_covered)
-            allDaysCovered(summer_rule, days_covered)
-
-            cloned_day_summer = default_rule.clone(model)
-            cloned_day_summer.setParent(summer_rule)
-
-            summer_day = summer_rule.daySchedule
-            summer_day = updateDaySchedule(summer_day, shift_time1, shift_time3, shift_time2)
-
-            winterStartMonth1 = OpenStudio::MonthOfYear.new(winter_start_month1)
-            winterEndMonth1 = OpenStudio::MonthOfYear.new(winter_end_month1)
-            winterStartDate1 = OpenStudio::Date.new(winterStartMonth1, 1)
-            winterEndDate1 = OpenStudio::Date.new(winterEndMonth1, 30)
-
-            winter_rule1 = summer_rule.clone(model).to_ScheduleRule.get
-            winter_rule1.setStartDate(winterStartDate1)
-            winter_rule1.setEndDate(winterEndDate1)
-            
-            cloned_day_winter = default_rule.clone(model)
-            cloned_day_winter.setParent(winter_rule1)
-
-            winter_day1 = winter_rule1.daySchedule
-            winter_day1 = updateDaySchedule(winter_day1, shift_time4, shift_time3, shift_time5)
-
-            winterStartMonth2 = OpenStudio::MonthOfYear.new(winter_start_month2)
-            winterEndMonth2 = OpenStudio::MonthOfYear.new(winter_end_month2)
-            winterStartDate2 = OpenStudio::Date.new(winterStartMonth2, 1)
-            winterEndDate2 = OpenStudio::Date.new(winterEndMonth2, 30)
-            winter_rule2 = winter_rule1.clone(model).to_ScheduleRule.get
-            winter_rule2.setStartDate(winterStartDate2)
-            winter_rule2.setEndDate(winterEndDate2)
-            cloned_day_winter2 = winter_day1.clone(model)
-            cloned_day_winter2.setParent(winter_rule2)
-          end
-        end
+  if shift_time1 < (shift_time3)  #HVAC Operation Schedule will be altered to achieve the pre-cooling/heating
+    schedules = []
+    schedule_args = model.getScheduleRulesets
+    schedule_args.each do |schedule_arg|
+      if schedule_arg.name.to_s == "OfficeMedium HVACOperationSchd"
+        schedules << schedule_arg
+      end
     end
+    schedules.each do |schedule|
+      # array of all profiles to change
+      profiles = []
 
-    
+      # push default profiles to array
+      default_rule = schedule.defaultDaySchedule
+      profiles << default_rule
+
+      # push profiles to array
+      rules = schedule.scheduleRules
+      rules.each do |rule|
+        day_sch = rule.daySchedule
+        profiles << day_sch
+      end
+
+      # add design days to array
+      summer_design = schedule.summerDesignDaySchedule
+      winter_design = schedule.winterDesignDaySchedule
+      profiles << summer_design
+      profiles << winter_design
+
+      # give info messages as I change specific profiles
+      runner.registerInfo("#{schedule.name} has changed to achieve the pre-cooling/heating requirement.")
+
+      # edit profiles
+      profiles.each do |day_sch|
+        times = day_sch.times
+        values = day_sch.values
+
+        # time objects to use in meausre
+        time_0 = OpenStudio::Time.new(0, 0, 0, 0)
+        time_24 =  OpenStudio::Time.new(0, 24, 0, 0)
+
+        # arrays for values to avoid overlap conflict of times
+        new_times = []
+        new_values = []
+
+           # push times to array
+        times.each do |time|
+           new_times << time
+         end
+
+        # push values to array
+        values.each do |value|
+          new_values << value
+        end
+
+        # clear values
+        day_sch.clearValues
+       day_sch.addValue(shift_time1,0)
+        # make new values
+        for i in 1..(new_values.length - 1)
+          day_sch.addValue(new_times[i], new_values[i])
+        end
+      end
+    end
+   end
+
+
     # push schedules to hash to avoid making unnecessary duplicates
     clg_set_schs = {}
     htg_set_schs = {}
@@ -444,82 +269,169 @@ class PreCoolingAndHeating < OpenStudio::Measure::ModelMeasure
     end
 
     # make cooling schedule adjustments and rename. Put in check to skip and warn if schedule not ruleset
+    
 
     clg_set_schs.each do |k, v| # old name and new object for schedule
       if !v.to_ScheduleRuleset.empty?
 
+        # array to store profiles in
+        profiles = []
         schedule = v.to_ScheduleRuleset.get
+
+        # push default profiles to array
         default_rule = schedule.defaultDaySchedule
+        profiles << default_rule
+
+        # push profiles to array
         rules = schedule.scheduleRules
+        rules.each do |rule|
+          day_sch = rule.daySchedule
+          profiles << day_sch
+        end
 
-        if rules.length > 0
-          summerStartMonth = OpenStudio::MonthOfYear.new(summer_start_month)
-          summerEndMonth = OpenStudio::MonthOfYear.new(summer_end_month)
-          summerStartDate = OpenStudio::Date.new(summerStartMonth, 1, 2006)
-          summerEndDate = OpenStudio::Date.new(summerEndMonth, 30, 2006)
+        # add design days to array
+        if alter_design_days == true
+          summer_design = schedule.summerDesignDaySchedule
+          winter_design = schedule.winterDesignDaySchedule
+          profiles << summer_design
+          # profiles << winter_design
+        end
 
-          rules.each do |rule|
-            summer_rule = rule
-            if (summer_rule.startDate().get == summerStartDate) && (summer_rule.endDate().get == summerEndDate) 
-              summer_day = summer_rule.daySchedule
-              day_time_vector = summer_day.times
-              day_value_vector = summer_day.values
-              summer_day.clearValues
-              
-              summer_day = createDaySchedule(summer_day, day_time_vector, day_value_vector, shift_time1, shift_time2, cooling_adjustment_ip)
-              final_clg_sch_set_values << summer_day.values
+        profiles.each do |sch_day|
+          day_time_vector = sch_day.times
+          day_value_vector = sch_day.values
+          clg_sch_set_values << day_value_vector
+          sch_day.clearValues
+          count = 0
+          for i in 0..(day_time_vector.size - 1)
+            if day_time_vector[i]>shift_time1&&day_time_vector[i]<shift_time2 && count == 0
+            v_si = OpenStudio::Quantity.new(day_value_vector[i], temperature_si_unit)
+            v_ip = OpenStudio.convert(v_si, temperature_ip_unit).get
+            target_v_ip = v_ip + cooling_adjustment_ip
+            target_temp_si = OpenStudio.convert(target_v_ip, temperature_si_unit).get
+            sch_day.addValue(shift_time1, day_value_vector[i])
+            sch_day.addValue(day_time_vector[i],target_temp_si.value)
+            count=1
+            elsif day_time_vector[i]>shift_time2 && count == 0
+            v_si = OpenStudio::Quantity.new(day_value_vector[i], temperature_si_unit)
+            v_ip = OpenStudio.convert(v_si, temperature_ip_unit).get
+            target_v_ip = v_ip + cooling_adjustment_ip
+            target_temp_si = OpenStudio.convert(target_v_ip, temperature_si_unit).get
+            sch_day.addValue(shift_time1,day_value_vector[i])
+            sch_day.addValue(shift_time2,target_temp_si.value)
+            sch_day.addValue(day_time_vector[i],day_value_vector[i])
+            count = 2
+            elsif day_time_vector[i]>shift_time1 && day_time_vector[i]<=shift_time2 && count==1
+            v_si = OpenStudio::Quantity.new(day_value_vector[i], temperature_si_unit)
+            v_ip = OpenStudio.convert(v_si, temperature_ip_unit).get
+            target_v_ip = v_ip + cooling_adjustment_ip
+            target_temp_si = OpenStudio.convert(target_v_ip, temperature_si_unit).get
+            sch_day.addValue(day_time_vector[i], day_value_vector[i])
+            elsif day_time_vector[i]>shift_time2 && count == 1
+            v_si = OpenStudio::Quantity.new(day_value_vector[i], temperature_si_unit)
+            v_ip = OpenStudio.convert(v_si, temperature_ip_unit).get
+            target_v_ip = v_ip + cooling_adjustment_ip
+            target_temp_si = OpenStudio.convert(target_v_ip, temperature_si_unit).get
+            sch_day.addValue(shift_time2, target_temp_si)
+            sch_day.addValue(day_time_vector[i], day_value_vector[i])
+            count=2
+            else 
+            v_si = OpenStudio::Quantity.new(day_value_vector[i], temperature_si_unit)
+            v_ip = OpenStudio.convert(v_si, temperature_ip_unit).get
+            target_v_ip = v_ip
+            target_temp_si = OpenStudio.convert(target_v_ip, temperature_si_unit).get
+            sch_day.addValue(day_time_vector[i], target_temp_si.value)
             end
           end
+          final_clg_sch_set_values << sch_day.values
         end
-        
-        ######################################################################
       else
         runner.registerWarning("Schedule '#{k}' isn't a ScheduleRuleset object and won't be altered by this measure.")
         v.remove # remove un-used clone
       end
     end
-    
+
     # make heating schedule adjustments and rename. Put in check to skip and warn if schedule not ruleset
     htg_set_schs.each do |k, v| # old name and new object for schedule
       if !v.to_ScheduleRuleset.empty?
+
+        # array to store profiles in
+        profiles = []
         schedule = v.to_ScheduleRuleset.get
+
+        # push default profiles to array
         default_rule = schedule.defaultDaySchedule
+        profiles << default_rule
+
+        # push profiles to array
         rules = schedule.scheduleRules
+        rules.each do |rule|
+          day_sch = rule.daySchedule
+          profiles << day_sch
+        end
 
-        days_covered = Array.new(7, false)
+        # add design days to array
+        if alter_design_days == true
+          summer_design = schedule.summerDesignDaySchedule
+          winter_design = schedule.winterDesignDaySchedule
+          # profiles << summer_design
+          profiles << winter_design
+        end
 
-        if rules.length > 0
-          winterStartMonth1 = OpenStudio::MonthOfYear.new(winter_start_month1)
-          winterEndMonth1 = OpenStudio::MonthOfYear.new(winter_end_month1)
-          winterStartDate1 = OpenStudio::Date.new(winterStartMonth1, 1, 2006)
-          winterEndDate1 = OpenStudio::Date.new(winterEndMonth1, 30, 2006)
-
-          winterStartMonth2 = OpenStudio::MonthOfYear.new(winter_start_month2)
-          winterEndMonth2 = OpenStudio::MonthOfYear.new(winter_end_month2)
-          winterStartDate2 = OpenStudio::Date.new(winterStartMonth2, 1, 2006)
-          winterEndDate2 = OpenStudio::Date.new(winterEndMonth2, 30, 2006)
-
-          rules.each do |rule|
-            winter_rule = rule
-            if ((winter_rule.startDate().get == winterStartDate1) && (winter_rule.endDate().get == winterEndDate1)) ||
-               ((winter_rule.startDate().get == winterStartDate2) && (winter_rule.endDate().get == winterEndDate2)) 
-              winter_day = winter_rule.daySchedule
-              day_time_vector = winter_day.times
-              day_value_vector = winter_day.values
-              winter_day.clearValues
-              
-              winter_day = createDaySchedule(winter_day, day_time_vector, day_value_vector, shift_time4, shift_time5, heating_adjustment_ip)
-              final_htg_sch_set_values << winter_day.values
+        profiles.each do |sch_day|
+          day_time_vector = sch_day.times
+          day_value_vector = sch_day.values
+          htg_sch_set_values << day_value_vector
+          sch_day.clearValues
+          count = 0
+          for i in 0..(day_time_vector.size - 1)
+            if day_time_vector[i]>shift_time1&&day_time_vector[i]<shift_time2 && count == 0
+            v_si = OpenStudio::Quantity.new(day_value_vector[i], temperature_si_unit)
+            v_ip = OpenStudio.convert(v_si, temperature_ip_unit).get
+            target_v_ip = v_ip + heating_adjustment_ip
+            target_temp_si = OpenStudio.convert(target_v_ip, temperature_si_unit).get
+            sch_day.addValue(shift_time1, day_value_vector[i])
+            sch_day.addValue(day_time_vector[i],target_temp_si.value)
+            count=1
+            elsif day_time_vector[i]>shift_time2 && count == 0
+            v_si = OpenStudio::Quantity.new(day_value_vector[i], temperature_si_unit)
+            v_ip = OpenStudio.convert(v_si, temperature_ip_unit).get
+            target_v_ip = v_ip + heating_adjustment_ip
+            target_temp_si = OpenStudio.convert(target_v_ip, temperature_si_unit).get
+            sch_day.addValue(shift_time1,day_value_vector[i])
+            sch_day.addValue(shift_time2,target_temp_si.value)
+            sch_day.addValue(day_time_vector[i],day_value_vector[i])
+            count = 2
+            elsif day_time_vector[i]>shift_time1 && day_time_vector[i]<=shift_time2 && count==1
+            v_si = OpenStudio::Quantity.new(day_value_vector[i], temperature_si_unit)
+            v_ip = OpenStudio.convert(v_si, temperature_ip_unit).get
+            target_v_ip = v_ip + heating_adjustment_ip
+            target_temp_si = OpenStudio.convert(target_v_ip, temperature_si_unit).get
+            sch_day.addValue(day_time_vector[i], day_value_vector[i])
+            elsif day_time_vector[i]>shift_time2 && count == 1
+            v_si = OpenStudio::Quantity.new(day_value_vector[i], temperature_si_unit)
+            v_ip = OpenStudio.convert(v_si, temperature_ip_unit).get
+            target_v_ip = v_ip + heating_adjustment_ip
+            target_temp_si = OpenStudio.convert(target_v_ip, temperature_si_unit).get
+            sch_day.addValue(shift_time2, target_temp_si)
+            sch_day.addValue(day_time_vector[i], day_value_vector[i])
+            count=2
+            else 
+            v_si = OpenStudio::Quantity.new(day_value_vector[i], temperature_si_unit)
+            v_ip = OpenStudio.convert(v_si, temperature_ip_unit).get
+            target_v_ip = v_ip
+            target_temp_si = OpenStudio.convert(target_v_ip, temperature_si_unit).get
+            sch_day.addValue(day_time_vector[i], target_temp_si.value)
             end
           end
+          final_htg_sch_set_values << sch_day.values
         end
-        
+
       else
         runner.registerWarning("Schedule '#{k}' isn't a ScheduleRuleset object and won't be altered by this measure.")
         v.remove # remove un-used clone
       end
     end
-
 
     # get min and max heating and cooling and convert to IP
     clg_sch_set_values = clg_sch_set_values.flatten
@@ -588,131 +500,9 @@ class PreCoolingAndHeating < OpenStudio::Measure::ModelMeasure
 
     # reporting final condition of model
     finishing_spaces = model.getSpaces
-    runner.registerFinalCondition("Final cooling setpoints used in the model range from #{final_min_clg_ip} to #{final_max_clg_ip}. Final heating setpoints used in the model range from #{final_min_htg_ip} to #{final_max_htg_ip}.\n The cooling setpoints are increased by #{cooling_adjustment}F，from #{starttime_cooling} to #{endtime_cooling}. \n The heating setpoints are decreased by #{0-heating_adjustment}F，from #{starttime_heating} to #{endtime_heating}.")
+    runner.registerFinalCondition("Final cooling setpoints used in the model range from #{final_min_clg_ip} to #{final_max_clg_ip}. Final heating setpoints used in the model range from #{final_min_htg_ip} to #{final_max_htg_ip}.\n The cooling setpoints are increased by #{cooling_adjustment}F，from #{starttime} to #{endtime}. \n The heating setpoints are decreased by #{0-heating_adjustment}F，from #{starttime} to #{endtime}.")
 
     return true
-  end
-
-
-  def allDaysCovered(sch_rule, sch_day_covered)
-    if sch_rule.applySunday 
-      sch_day_covered[0] = true
-    end
-    if sch_rule.applyMonday
-      sch_day_covered[1] = true
-    end
-    if sch_rule.applyTuesday
-      sch_day_covered[2] = true
-    end
-    if sch_rule.applyWednesday
-      sch_day_covered[3] = true
-    end
-    if sch_rule.applyThursday
-      sch_day_covered[4] = true
-    end
-    if sch_rule.applyFriday
-      sch_day_covered[5] = true
-    end
-    if sch_rule.applySaturday
-      sch_day_covered[6] = true
-    end
-  end
-
-  def coverSomeDays(sch_rule, sch_day_covered)
-    if sch_day_covered[0] == false
-      sch_rule.setApplySunday(true)
-    end
-    if sch_day_covered[1] == false
-      sch_rule.setApplyMonday(true)
-    end
-    if sch_day_covered[2] == false
-      sch_rule.setApplyTuesday(true)
-    end
-    if sch_day_covered[3] == false
-      sch_rule.setApplyWednesday(true)
-    end
-    if sch_day_covered[4] == false
-      sch_rule.setApplyThursday(true)
-    end
-    if sch_day_covered[5] == false
-      sch_rule.setApplyFriday(true)
-    end
-    if sch_day_covered[6] == false
-      sch_rule.setApplySaturday(true)
-    end
-
-  end
-  def updateDaySchedule(sch_day, time_begin, time_mid, time_end)
-    if (time_begin < time_mid)
-      new_times = []
-      new_values = []
-      day_time_vector = sch_day.times
-      day_value_vector = sch_day.values
-
-      day_time_vector.each do |time|
-        new_times << time
-      end
-
-      # push values to array
-      day_value_vector.each do |value|
-        new_values << value
-      end
-
-      sch_day.clearValues
-
-      sch_day.addValue(time_begin,0)       
-      for i in 1..(new_values.length - 1)
-        sch_day.addValue(new_times[i], new_values[i])
-      end
-    end
-    return sch_day
-  end
-  def createDaySchedule(sch_day, vec_time, vec_value, time_begin, time_end, adjustment)
-    temperature_si_unit = OpenStudio.createUnit('C').get
-    temperature_ip_unit = OpenStudio.createUnit('F').get
-
-    count = 0
-    for i in 0..(vec_time.size - 1)
-      if vec_time[i]>time_begin&&vec_time[i]<time_end && count == 0
-      v_si = OpenStudio::Quantity.new(vec_value[i], temperature_si_unit)
-      v_ip = OpenStudio.convert(v_si, temperature_ip_unit).get
-      target_v_ip = v_ip + adjustment
-      target_temp_si = OpenStudio.convert(target_v_ip, temperature_si_unit).get
-      sch_day.addValue(time_begin, vec_value[i])
-      sch_day.addValue(vec_time[i],target_temp_si.value)
-      count=1
-      elsif vec_time[i]>time_end && count == 0
-      v_si = OpenStudio::Quantity.new(vec_value[i], temperature_si_unit)
-      v_ip = OpenStudio.convert(v_si, temperature_ip_unit).get
-      target_v_ip = v_ip + adjustment
-      target_temp_si = OpenStudio.convert(target_v_ip, temperature_si_unit).get
-      sch_day.addValue(time_begin,vec_value[i])
-      sch_day.addValue(time_end,target_temp_si.value)
-      sch_day.addValue(vec_time[i],vec_value[i])
-      count = 2
-      elsif vec_time[i]>time_begin && vec_time[i]<=time_end && count==1
-      v_si = OpenStudio::Quantity.new(vec_value[i], temperature_si_unit)
-      v_ip = OpenStudio.convert(v_si, temperature_ip_unit).get
-      target_v_ip = v_ip + adjustment
-      target_temp_si = OpenStudio.convert(target_v_ip, temperature_si_unit).get
-      sch_day.addValue(vec_time[i], vec_value[i])
-      elsif vec_time[i]>time_end && count == 1
-      v_si = OpenStudio::Quantity.new(vec_value[i], temperature_si_unit)
-      v_ip = OpenStudio.convert(v_si, temperature_ip_unit).get
-      target_v_ip = v_ip + adjustment
-      target_temp_si = OpenStudio.convert(target_v_ip, temperature_si_unit).get
-      sch_day.addValue(time_end, target_temp_si)
-      sch_day.addValue(vec_time[i], vec_value[i])
-      count=2
-      else 
-      v_si = OpenStudio::Quantity.new(vec_value[i], temperature_si_unit)
-      v_ip = OpenStudio.convert(v_si, temperature_ip_unit).get
-      target_v_ip = v_ip
-      target_temp_si = OpenStudio.convert(target_v_ip, temperature_si_unit).get
-      sch_day.addValue(vec_time[i], target_temp_si.value)
-      end
-    end
-    return sch_day
   end
 end
 

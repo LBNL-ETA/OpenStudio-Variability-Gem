@@ -1,12 +1,12 @@
 <measure>
   <schema_version>3.0</schema_version>
   <name>reduce_electric_equipment_loads_by_percentage_and_time_period</name>
-  <uid>9c52e90b-5b2b-4afb-abc5-0d26b99412da</uid>
-  <version_id>ee25245d-14a9-44ad-88eb-862568c37ab3</version_id>
-  <version_modified>20191017T042031Z</version_modified>
+  <uid>e3a24805-f0a7-41d8-960a-43c0e66d4681</uid>
+  <version_id>c337dc6e-d0ef-475c-aef1-cb5eb24d2d3d</version_id>
+  <version_modified>20200402T215443Z</version_modified>
   <xml_checksum>F9A5B8F0</xml_checksum>
   <class_name>ReduceElectricEquipmentLoadsByPercentageAndTimePeriod</class_name>
-  <display_name>DR MELs</display_name>
+  <display_name>Reduce Electric Equipment Loads by Percentage for Specific Space Type and Time Periods</display_name>
   <description>This measure adjusts electric equipment loads by a user-specified percentage and a user-specified time period. This is applied to a specific space type or throughout the entire building.</description>
   <modeler_description>This measure will clone all of the schedules that are used as electric equipment power setting for each zone. Then the schedules are adjusted by a specified percentage during a specified time period. If the measure is applied throughout the entire building, the reduction value can be separately defined based on whether this space type is occupied or not.</modeler_description>
   <arguments>
@@ -19,7 +19,7 @@
       <default_value>*Entire Building*</default_value>
       <choices>
         <choice>
-          <value>{e2658972-4b7a-4e6c-a64e-c575a5b1fe0d}</value>
+          <value>{eadf3038-fc27-4e90-9958-dcf647e8c805}</value>
           <display_name>*Entire Building*</display_name>
         </choice>
       </choices>
@@ -31,7 +31,7 @@
       <type>Double</type>
       <required>true</required>
       <model_dependent>false</model_dependent>
-      <default_value>20</default_value>
+      <default_value>80</default_value>
     </argument>
     <argument>
       <name>unoccupied_space_type</name>
@@ -39,7 +39,7 @@
       <type>Double</type>
       <required>true</required>
       <model_dependent>false</model_dependent>
-      <default_value>100</default_value>
+      <default_value>50</default_value>
     </argument>
     <argument>
       <name>single_space_type</name>
@@ -47,73 +47,23 @@
       <type>Double</type>
       <required>true</required>
       <model_dependent>false</model_dependent>
-      <default_value>20</default_value>
+      <default_value>80</default_value>
     </argument>
     <argument>
-      <name>starttime_winter2</name>
+      <name>starttime</name>
       <display_name>Start Time for the Reduction</display_name>
       <type>String</type>
       <required>true</required>
       <model_dependent>false</model_dependent>
-      <default_value>17:00:00</default_value>
+      <default_value>15:00:00</default_value>
     </argument>
     <argument>
-      <name>endtime_winter2</name>
+      <name>endtime</name>
       <display_name>End Time for the Reduction</display_name>
       <type>String</type>
       <required>true</required>
       <model_dependent>false</model_dependent>
-      <default_value>21:00:00</default_value>
-    </argument>
-    <argument>
-      <name>starttime_winter1</name>
-      <display_name>Start Time for the Reduction</display_name>
-      <type>String</type>
-      <required>true</required>
-      <model_dependent>false</model_dependent>
-      <default_value>17:00:00</default_value>
-    </argument>
-    <argument>
-      <name>endtime_winter1</name>
-      <display_name>End Time for the Reduction</display_name>
-      <type>String</type>
-      <required>true</required>
-      <model_dependent>false</model_dependent>
-      <default_value>21:00:00</default_value>
-    </argument>
-    <argument>
-      <name>starttime_summer</name>
-      <display_name>Start Time for the Reduction during the Special Schedule</display_name>
-      <type>String</type>
-      <required>true</required>
-      <model_dependent>false</model_dependent>
-      <default_value>16:00:00</default_value>
-    </argument>
-    <argument>
-      <name>endtime_summer</name>
-      <display_name>End Time for the Reduction during the Special Schedule</display_name>
-      <type>String</type>
-      <required>true</required>
-      <model_dependent>false</model_dependent>
-      <default_value>20:00:00</default_value>
-    </argument>
-    <argument>
-      <name>auto_date</name>
-      <display_name>Enable Climate-specific Periods Setting ?</display_name>
-      <type>Boolean</type>
-      <required>true</required>
-      <model_dependent>false</model_dependent>
-      <default_value>true</default_value>
-      <choices>
-        <choice>
-          <value>true</value>
-          <display_name>true</display_name>
-        </choice>
-        <choice>
-          <value>false</value>
-          <display_name>false</display_name>
-        </choice>
-      </choices>
+      <default_value>18:00:00</default_value>
     </argument>
   </arguments>
   <outputs/>
@@ -169,22 +119,16 @@
       <checksum>703C9964</checksum>
     </file>
     <file>
+      <filename>README.md</filename>
+      <filetype>md</filetype>
+      <usage_type>readme</usage_type>
+      <checksum>62AD2001</checksum>
+    </file>
+    <file>
       <filename>ReduceElectricEquipmentLoadsByPercentageAndTimePeriod_Test.rb</filename>
       <filetype>rb</filetype>
       <usage_type>test</usage_type>
       <checksum>399ADAD4</checksum>
-    </file>
-    <file>
-      <filename>desktop.ini</filename>
-      <filetype>ini</filetype>
-      <usage_type>test</usage_type>
-      <checksum>F3E456F3</checksum>
-    </file>
-    <file>
-      <filename>README.md</filename>
-      <filetype>md</filetype>
-      <usage_type>readme</usage_type>
-      <checksum>18010AD6</checksum>
     </file>
     <file>
       <version>
@@ -195,7 +139,7 @@
       <filename>measure.rb</filename>
       <filetype>rb</filetype>
       <usage_type>script</usage_type>
-      <checksum>22353C2C</checksum>
+      <checksum>D2B979D8</checksum>
     </file>
   </files>
 </measure>

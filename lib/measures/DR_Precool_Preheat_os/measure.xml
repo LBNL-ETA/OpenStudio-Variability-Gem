@@ -1,12 +1,12 @@
 <measure>
   <schema_version>3.0</schema_version>
   <name>pre_cooling_and_heating</name>
-  <uid>4e3c78f5-43d5-4e40-8cdf-fc9780c13a09</uid>
-  <version_id>d8c7eb39-b7b8-4710-b72f-79a20ccbd174</version_id>
-  <version_modified>20191105T164318Z</version_modified>
+  <uid>4b1e8a0e-d118-4678-96ce-43c2ff7becf3</uid>
+  <version_id>dffb1e5f-c484-4576-9864-0fa07875380c</version_id>
+  <version_modified>20200402T215443Z</version_modified>
   <xml_checksum>4F7846F2</xml_checksum>
   <class_name>PreCoolingAndHeating</class_name>
-  <display_name>DR Precooling Preheating</display_name>
+  <display_name>Pre Cooling &amp; Heating by Certain Time Period and Thermostat Setpoint</display_name>
   <description>This measure adjusts cooling and heating schedules by a user specified number of degrees and time period. This is applied throughout the entire building.</description>
   <modeler_description>This measure will clone all of the schedules that are used as heating and cooling setpoints for thermal zones. The clones are hooked up to the thermostat in place of the original schedules. Then the schedules are adjusted by the specified values. HVAC operation schedule will also be changed if the start time of the pre-cooling/heating is earlier than the default start value. There is a checkbox to determine if the thermostat for design days should be altered.</modeler_description>
   <arguments>
@@ -19,44 +19,28 @@
       <default_value>-2</default_value>
     </argument>
     <argument>
-      <name>starttime_cooling</name>
-      <display_name>Start Time for Pre-cooling</display_name>
-      <type>String</type>
-      <required>true</required>
-      <model_dependent>false</model_dependent>
-      <default_value>11:59:00</default_value>
-    </argument>
-    <argument>
-      <name>endtime_cooling</name>
-      <display_name>End Time for Pre-cooling</display_name>
-      <type>String</type>
-      <required>true</required>
-      <model_dependent>false</model_dependent>
-      <default_value>15:59:00</default_value>
-    </argument>
-    <argument>
       <name>heating_adjustment</name>
       <display_name>Degrees Fahrenheit to Adjust heating Setpoint By</display_name>
       <type>Double</type>
       <required>true</required>
       <model_dependent>false</model_dependent>
-      <default_value>2</default_value>
+      <default_value>0</default_value>
     </argument>
     <argument>
-      <name>starttime_heating</name>
-      <display_name>Start Time for Pre-heating</display_name>
+      <name>starttime</name>
+      <display_name>Start Time for Pre-cooling/heating</display_name>
       <type>String</type>
       <required>true</required>
       <model_dependent>false</model_dependent>
-      <default_value>0:01:00</default_value>
+      <default_value>12:00:00</default_value>
     </argument>
     <argument>
-      <name>endtime_heating</name>
-      <display_name>End Time for Pre-heating</display_name>
+      <name>endtime</name>
+      <display_name>End Time for Pre-cooling/heating</display_name>
       <type>String</type>
       <required>true</required>
       <model_dependent>false</model_dependent>
-      <default_value>4:59:00</default_value>
+      <default_value>14:59:00</default_value>
     </argument>
     <argument>
       <name>alter_design_days</name>
@@ -65,24 +49,6 @@
       <required>true</required>
       <model_dependent>false</model_dependent>
       <default_value>false</default_value>
-      <choices>
-        <choice>
-          <value>true</value>
-          <display_name>true</display_name>
-        </choice>
-        <choice>
-          <value>false</value>
-          <display_name>false</display_name>
-        </choice>
-      </choices>
-    </argument>
-    <argument>
-      <name>auto_date</name>
-      <display_name>Enable Climate-specific Periods Setting ?</display_name>
-      <type>Boolean</type>
-      <required>true</required>
-      <model_dependent>false</model_dependent>
-      <default_value>true</default_value>
       <choices>
         <choice>
           <value>true</value>
@@ -124,6 +90,18 @@
   </attributes>
   <files>
     <file>
+      <filename>seed_model.osm</filename>
+      <filetype>osm</filetype>
+      <usage_type>test</usage_type>
+      <checksum>01DC9D8F</checksum>
+    </file>
+    <file>
+      <filename>ThermostatTestModel.osm</filename>
+      <filetype>osm</filetype>
+      <usage_type>test</usage_type>
+      <checksum>508ECE85</checksum>
+    </file>
+    <file>
       <filename>LICENSE.md</filename>
       <filetype>md</filetype>
       <usage_type>license</usage_type>
@@ -136,16 +114,16 @@
       <checksum>703C9964</checksum>
     </file>
     <file>
-      <filename>desktop.ini</filename>
-      <filetype>ini</filetype>
-      <usage_type>test</usage_type>
-      <checksum>96A4B7E7</checksum>
-    </file>
-    <file>
       <filename>README.md</filename>
       <filetype>md</filetype>
       <usage_type>readme</usage_type>
-      <checksum>71A6EADD</checksum>
+      <checksum>61D520C3</checksum>
+    </file>
+    <file>
+      <filename>PreCoolingAndHeating_Test.rb</filename>
+      <filetype>rb</filetype>
+      <usage_type>test</usage_type>
+      <checksum>814D73D1</checksum>
     </file>
     <file>
       <version>
@@ -156,7 +134,7 @@
       <filename>measure.rb</filename>
       <filetype>rb</filetype>
       <usage_type>script</usage_type>
-      <checksum>6E12EA4F</checksum>
+      <checksum>85177E1E</checksum>
     </file>
   </files>
 </measure>

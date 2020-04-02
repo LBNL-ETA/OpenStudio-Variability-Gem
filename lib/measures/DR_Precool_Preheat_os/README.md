@@ -2,7 +2,7 @@
 
 ###### (Automatically generated documentation)
 
-# DR Precooling Preheating
+# Pre Cooling & Heating by Certain Time Period and Thermostat Setpoint
 
 ## Description
 This measure adjusts cooling and heating schedules by a user specified number of degrees and time period. This is applied throughout the entire building.
@@ -27,22 +27,6 @@ ModelMeasure
 **Required:** true,
 **Model Dependent:** false
 
-### Start Time for Pre-cooling
-
-**Name:** starttime_cooling,
-**Type:** String,
-**Units:** ,
-**Required:** true,
-**Model Dependent:** false
-
-### End Time for Pre-cooling
-
-**Name:** endtime_cooling,
-**Type:** String,
-**Units:** ,
-**Required:** true,
-**Model Dependent:** false
-
 ### Degrees Fahrenheit to Adjust heating Setpoint By
 
 **Name:** heating_adjustment,
@@ -51,17 +35,17 @@ ModelMeasure
 **Required:** true,
 **Model Dependent:** false
 
-### Start Time for Pre-heating
+### Start Time for Pre-cooling/heating
 
-**Name:** starttime_heating,
+**Name:** starttime,
 **Type:** String,
 **Units:** ,
 **Required:** true,
 **Model Dependent:** false
 
-### End Time for Pre-heating
+### End Time for Pre-cooling/heating
 
-**Name:** endtime_heating,
+**Name:** endtime,
 **Type:** String,
 **Units:** ,
 **Required:** true,
@@ -70,14 +54,6 @@ ModelMeasure
 ### Alter Design Day Thermostats
 
 **Name:** alter_design_days,
-**Type:** Boolean,
-**Units:** ,
-**Required:** true,
-**Model Dependent:** false
-
-### Enable Climate-specific Periods Setting ?
-
-**Name:** auto_date,
 **Type:** Boolean,
 **Units:** ,
 **Required:** true,

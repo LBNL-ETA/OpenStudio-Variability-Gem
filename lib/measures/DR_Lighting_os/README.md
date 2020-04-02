@@ -2,7 +2,7 @@
 
 ###### (Automatically generated documentation)
 
-# DR Lighting
+# Reduce Lighting Loads by Percentage for Specfic Space Type and Time Periods
 
 ## Description
 This measure adjusts lighting loads by a user-specified percentage and a user-specified time period. This is applied to a specific space type or throughout the entire building.
@@ -54,7 +54,7 @@ ModelMeasure
 
 ### Start Time for the Reduction
 
-**Name:** starttime_winter1,
+**Name:** starttime,
 **Type:** String,
 **Units:** ,
 **Required:** true,
@@ -62,48 +62,8 @@ ModelMeasure
 
 ### End Time for the Reduction
 
-**Name:** endtime_winter1,
+**Name:** endtime,
 **Type:** String,
-**Units:** ,
-**Required:** true,
-**Model Dependent:** false
-
-### Start Time for the Reduction
-
-**Name:** starttime_winter2,
-**Type:** String,
-**Units:** ,
-**Required:** true,
-**Model Dependent:** false
-
-### End Time for the Reduction
-
-**Name:** endtime_winter2,
-**Type:** String,
-**Units:** ,
-**Required:** true,
-**Model Dependent:** false
-
-### Start Time for the Reduction during the Special Schedule
-
-**Name:** starttime_summer,
-**Type:** String,
-**Units:** ,
-**Required:** true,
-**Model Dependent:** false
-
-### End Time for the Reduction during the Special Schedule
-
-**Name:** endtime_summer,
-**Type:** String,
-**Units:** ,
-**Required:** true,
-**Model Dependent:** false
-
-### Enable Climate-specific Periods Setting ?
-
-**Name:** auto_date,
-**Type:** Boolean,
 **Units:** ,
 **Required:** true,
 **Model Dependent:** false
