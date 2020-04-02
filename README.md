@@ -7,7 +7,7 @@ This gem contains methods to introduce variabilities to extend core OpenStudio S
 
 This gem is created based on [openstudio-extension-gem](https://github.com/NREL/openstudio-extension-gem). The contents and directory follow the same structure.
 
-## Licence
+## License
 
 See license.txt for details.
 
