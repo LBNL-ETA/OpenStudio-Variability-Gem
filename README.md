@@ -9,6 +9,10 @@ This gem is created based on [openstudio-extension-gem](https://github.com/NREL/
 
 ## License
 
+Main code: Copyright (c) 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Dept. of Energy)
+
+Selected fault measure scripts: Copyright (c) 2015 Purdue University
+
 See [license.txt](License.txt) for details.
 
 See [this disclaimer page](https://www.lbl.gov/disclaimers/) for more Privacy, Security, Copyright, Disclaimers, and Accessibility Information
