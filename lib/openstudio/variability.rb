@@ -34,7 +34,7 @@
 # *******************************************************************************
 
 require 'openstudio/variability/version'
-require 'openstudio/extension'
+require 'openstudio/variability/extension'
 
 module OpenStudio
   module Variability
