@@ -22,7 +22,6 @@ class LightingRetrofit < OpenStudio::Measure::ModelMeasure
   end
 
 
-
   def add_light(model, space, space_type, space_type_light_def)
     # This function creates space specific lights and light_defs based on space_type specific lights and light_defs
     space_type_lpd = space_type_light_def.wattsperSpaceFloorArea.to_f
@@ -51,10 +50,10 @@ class LightingRetrofit < OpenStudio::Measure::ModelMeasure
     return new_light
   end
 
-  def add_light_ems(model, light, light_level_w, light_sch_ems_sensor, retrofit_month=1, retrofit_day=1)
+  def add_light_ems(model, light, light_level_w, light_sch_ems_sensor, retrofit_month = 1, retrofit_day = 1)
     light_actuator = OpenStudio::Model::EnergyManagementSystemActuator.new(light, "Lights", "Electric Power Level")
     light_program = OpenStudio::Model::EnergyManagementSystemProgram.new(model)
-    light_program.setName("#{light.name.to_s} actuator")
+    light_program.setName("#{light.name.to_s} actuator".gsub("-", ""))
     light_program_body = <<-EMS
       IF (Month >= #{retrofit_month}) && (DayOfMonth >= #{retrofit_day}),
           SET #{light_actuator.name} = #{light_level_w} * #{light_sch_ems_sensor.handle} !- Overwrite light power level (W)
@@ -71,14 +70,14 @@ class LightingRetrofit < OpenStudio::Measure::ModelMeasure
 
     # Add the retrofit month and day choice arguments
     month_chs = OpenStudio::StringVector.new
-    ('1'..'12').each {|month_s| month_chs << month_s}
+    ('1'..'12').each { |month_s| month_chs << month_s }
     retrofit_month = OpenStudio::Ruleset::OSArgument::makeChoiceArgument('retrofit_month', month_chs, true)
     retrofit_month.setDisplayName('Month of the year when retrofit takes place')
     retrofit_month.setDefaultValue('7')
     args << retrofit_month
 
     day_chs = OpenStudio::StringVector.new
-    ('1'..'31').each {|day_s| day_chs << day_s}
+    ('1'..'31').each { |day_s| day_chs << day_s }
     retrofit_day = OpenStudio::Measure::OSArgument.makeChoiceArgument('retrofit_day', day_chs, true)
     retrofit_day.setDisplayName('Day of the month when retrofit takes place')
     retrofit_day.setDefaultValue('1')
@@ -102,6 +101,21 @@ class LightingRetrofit < OpenStudio::Measure::ModelMeasure
       rescue
       end
     end
+
+    ## Then check light definition by space
+    v_spaces = model.getSpaces
+    v_spaces.each do |space|
+      current_space_light = space.lights[0]
+      unless current_space_light.nil?
+        current_space_light_def = current_space_light.lightsDefinition
+        current_space_lpd = current_space_light_def.wattsperSpaceFloorArea.get.round(1)
+        arg_temp = OpenStudio::Measure::OSArgument.makeDoubleArgument("new_#{space.name.to_s}_lpd", true)
+        arg_temp.setDisplayName("New electric lighting power density for space: #{space.name.to_s} (W/m2)")
+        arg_temp.setDefaultValue(current_space_lpd)
+        args << arg_temp
+      end
+    end
+
 
     return args
   end
@@ -127,11 +141,41 @@ class LightingRetrofit < OpenStudio::Measure::ModelMeasure
     prog_calling_manager = OpenStudio::Model::EnergyManagementSystemProgramCallingManager.new(model)
     prog_calling_manager.setCallingPoint('BeginTimestepBeforePredictor')
 
+    # Remove old and add new light with EMS by spaces
+    hash_space_lpd = Hash.new
+    v_spaces = model.getSpaces
+    v_spaces.each do |space|
+      current_space_light = space.lights[0]
+      unless current_space_light.nil?
+        # Get light power density for each space type
+        current_space_lpd = runner.getStringArgumentValue("new_#{space.name.to_s}_lpd", user_arguments)
+        hash_space_lpd["new_#{space.name.to_s}_lpd"] = current_space_lpd
+        runner.registerInfo("User entered new electric lighting power density for #{space.name.to_s} is #{current_space_lpd} W/m2")
 
+        # Set ems
+        current_space_light_def = current_space_light.lightsDefinition
+        current_space_sch_set = space.defaultScheduleSet.get
+        current_space_light_sch_set = current_space_sch_set.lightingSchedule.get
+
+        light_sch_name = current_space_light_sch_set.nameString
+        light_sch_ems_sensor = OpenStudio::Model::EnergyManagementSystemSensor.new(model, 'Schedule Value')
+        light_sch_ems_sensor.setKeyName(light_sch_name)
+        runner.registerInfo("Delete old light object for #{space.name}")
+        current_space_light.remove
+
+        new_light = add_light(model, space, space, current_space_light_def)
+        light_level_w = current_space_lpd.to_f * space.floorArea.to_f
+        ems_light_program = add_light_ems(model, new_light, light_level_w, light_sch_ems_sensor, retrofit_month, retrofit_day)
+        prog_calling_manager.addProgram(ems_light_program)
+        runner.registerInfo("Add ems lighting control for #{space.name} succeeded.")
+      end
+    end
+
+
+    # Remove old and add new light with EMS by space types
     hash_space_type_lpd = Hash.new
     v_space_types = model.getSpaceTypes
     v_space_types.each do |space_type|
-
       current_spaces = space_type.spaces
       current_space_type_light = space_type.lights[0]
       unless current_space_type_light.nil?

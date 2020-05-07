@@ -46,7 +46,7 @@ class EquipmentRetrofit < OpenStudio::Measure::ModelMeasure
   def add_equip_ems(model, equip, equip_level_w, equip_sch_ems_sensor, retrofit_month=1, retrofit_day=1)
     equip_actuator = OpenStudio::Model::EnergyManagementSystemActuator.new(equip, "ElectricEquipment", "Electric Power Level")
     equip_program = OpenStudio::Model::EnergyManagementSystemProgram.new(model)
-    equip_program.setName("#{equip.name.to_s} actuator")
+    equip_program.setName("#{equip.name.to_s} actuator".gsub("-", ""))
     equip_program_body = <<-EMS
       IF (Month >= #{retrofit_month}) && (DayOfMonth >= #{retrofit_day}),
           SET #{equip_actuator.name} = #{equip_level_w} * #{equip_sch_ems_sensor.handle} !- Overwrite equipment power level (W)
@@ -55,8 +55,6 @@ class EquipmentRetrofit < OpenStudio::Measure::ModelMeasure
     equip_program.setBody(equip_program_body)
     return equip_program
   end
-
-
 
   # define the arguments that the user will input
   def arguments(model)
@@ -79,20 +77,33 @@ class EquipmentRetrofit < OpenStudio::Measure::ModelMeasure
 
 
     # Add the new equipment power density arguments
+    ## First check equipment definition by space_type
     v_space_types = model.getSpaceTypes
     v_space_types.each do |space_type|
       current_spaces = space_type.spaces
       current_space_type_equip = space_type.electricEquipment[0]
-    
-      unless current_space_type_equip.nil?    
+      unless current_space_type_equip.nil?
         current_space_type_equip_def = current_space_type_equip.electricEquipmentDefinition
         current_space_type_epd = current_space_type_equip_def.wattsperSpaceFloorArea.get.round(1)
         arg_temp = OpenStudio::Measure::OSArgument.makeDoubleArgument("new_#{space_type.name.to_s}_epd", true)
-        arg_temp.setDisplayName("New electric equipment power density for #{space_type.name.to_s} (W/m2)")
+        arg_temp.setDisplayName("New electric equipment power density for space type: #{space_type.name.to_s} (W/m2)")
         arg_temp.setDefaultValue(current_space_type_epd)
         args << arg_temp
       end
-    
+    end
+
+    ## Then check equipment definition by space
+    v_spaces = model.getSpaces
+    v_spaces.each do |space|
+      current_space_equip = space.electricEquipment[0]
+      unless current_space_equip.nil?
+        current_space_equip_def = current_space_equip.electricEquipmentDefinition
+        current_space_epd = current_space_equip_def.wattsperSpaceFloorArea.get.round(1)
+        arg_temp = OpenStudio::Measure::OSArgument.makeDoubleArgument("new_#{space.name.to_s}_epd", true)
+        arg_temp.setDisplayName("New electric equipment power density for space: #{space.name.to_s} (W/m2)")
+        arg_temp.setDefaultValue(current_space_epd)
+        args << arg_temp
+      end
     end
 
     return args
@@ -111,6 +122,9 @@ class EquipmentRetrofit < OpenStudio::Measure::ModelMeasure
     retrofit_month = runner.getStringArgumentValue('retrofit_month', user_arguments).to_i
     retrofit_day = runner.getStringArgumentValue('retrofit_day', user_arguments).to_i
 
+    # report initial condition of model
+    runner.registerInitialCondition("Measure started successfully.")
+
     # TODO: check the month and day for reasonableness
     runner.registerInfo("User entered retrofit month: #{retrofit_month}")
     runner.registerInfo("User entered retrofit day: #{retrofit_day}")
@@ -120,22 +134,51 @@ class EquipmentRetrofit < OpenStudio::Measure::ModelMeasure
     prog_calling_manager.setCallingPoint('BeginTimestepBeforePredictor')
 
 
+    # Remove old and add new equip with EMS by spaces
+    hash_space_epd = Hash.new
+    v_spaces = model.getSpaces
+    v_spaces.each do |space|
+      current_space_equip = space.electricEquipment[0]
+      unless current_space_equip.nil?
+        # Get equipment power density for each space type
+        current_space_epd = runner.getStringArgumentValue("new_#{space.name.to_s}_epd", user_arguments)
+        hash_space_epd["new_#{space.name.to_s}_epd"] = current_space_epd
+        runner.registerInfo("User entered new electric equipment power density for #{space.name.to_s} is #{current_space_epd} W/m2")
+
+        # Set ems
+        current_space_equip_def = current_space_equip.electricEquipmentDefinition
+        current_space_sch_set = space.defaultScheduleSet.get
+        current_space_equip_sch_set = current_space_sch_set.electricEquipmentSchedule.get
+
+        equip_sch_name = current_space_equip_sch_set.nameString
+        equip_sch_ems_sensor = OpenStudio::Model::EnergyManagementSystemSensor.new(model, 'Schedule Value')
+        equip_sch_ems_sensor.setKeyName(equip_sch_name)
+        runner.registerInfo("Delete old equip object for #{space.name}")
+        current_space_equip.remove
+
+        new_equip = add_equip(model, space, space, current_space_equip_def)
+        equip_level_w = current_space_epd.to_f * space.floorArea.to_f
+        ems_equip_program = add_equip_ems(model, new_equip, equip_level_w, equip_sch_ems_sensor, retrofit_month, retrofit_day)
+        prog_calling_manager.addProgram(ems_equip_program)
+        runner.registerInfo("Add ems equipment control for #{space.name} succeeded.")
+      end
+    end
+
+
+    # Remove old and add new equip with EMS by space types
     hash_space_type_epd = Hash.new
     v_space_types = model.getSpaceTypes
     v_space_types.each do |space_type|
-
       current_spaces = space_type.spaces
       current_space_type_equip = space_type.electricEquipment[0]
-
       unless current_space_type_equip.nil?
         # Get equipment power density for each space type
         current_space_type_epd = runner.getStringArgumentValue("new_#{space_type.name.to_s}_epd", user_arguments)
-        hash_space_type_epd["new_#{space_type.name.to_s}_lpd"] = current_space_type_epd
+        hash_space_type_epd["new_#{space_type.name.to_s}_epd"] = current_space_type_epd
         runner.registerInfo("User entered new electric equipment power density for #{space_type.name.to_s} is #{current_space_type_epd} W/m2")
-        
+
         # Set ems
         current_space_type_equip_def = current_space_type_equip.electricEquipmentDefinition
-
         current_space_type_sch_set = space_type.defaultScheduleSet.get
         current_space_type_equip_sch_set = current_space_type_sch_set.electricEquipmentSchedule.get
 
@@ -154,16 +197,8 @@ class EquipmentRetrofit < OpenStudio::Measure::ModelMeasure
           prog_calling_manager.addProgram(ems_equip_program)
           runner.registerInfo("Add ems equipment control for #{space.name} succeeded.")
         end
-      
-
       end
     end
-
-
-
-
-    # report initial condition of model
-    runner.registerInitialCondition("Measure started successfully.")
 
     # echo the model updates back to the user
     runner.registerInfo("The electric equipment retrofit measure is applied.")
