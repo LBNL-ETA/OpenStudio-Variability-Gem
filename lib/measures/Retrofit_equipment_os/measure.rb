@@ -86,8 +86,8 @@ class EquipmentRetrofit < OpenStudio::Measure::ModelMeasure
         current_space_type_equip_def = current_space_type_equip.electricEquipmentDefinition
         current_space_type_epd = current_space_type_equip_def.wattsperSpaceFloorArea.get.round(1)
         arg_temp = OpenStudio::Measure::OSArgument.makeDoubleArgument("new_#{space_type.name.to_s}_epd", true)
-        arg_temp.setDisplayName("New electric equipment power density for space type: #{space_type.name.to_s} (W/m2)")
-        arg_temp.setDefaultValue(current_space_type_epd)
+        arg_temp.setDisplayName("New electric equipment power density for space type: #{space_type.name.to_s} (W/m2), original value = #{current_space_type_epd} (W/m2)")
+        arg_temp.setDefaultValue(current_space_type_epd*0.8)
         args << arg_temp
       end
     end
@@ -100,8 +100,8 @@ class EquipmentRetrofit < OpenStudio::Measure::ModelMeasure
         current_space_equip_def = current_space_equip.electricEquipmentDefinition
         current_space_epd = current_space_equip_def.wattsperSpaceFloorArea.get.round(1)
         arg_temp = OpenStudio::Measure::OSArgument.makeDoubleArgument("new_#{space.name.to_s}_epd", true)
-        arg_temp.setDisplayName("New electric equipment power density for space: #{space.name.to_s} (W/m2)")
-        arg_temp.setDefaultValue(current_space_epd)
+        arg_temp.setDisplayName("New electric equipment power density for space: #{space.name.to_s} (W/m2), original value = #{current_space_epd} (W/m2)")
+        arg_temp.setDefaultValue(current_space_epd*0.8)
         args << arg_temp
       end
     end

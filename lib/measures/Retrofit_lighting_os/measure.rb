@@ -94,8 +94,8 @@ class LightingRetrofit < OpenStudio::Measure::ModelMeasure
           current_space_type_light_def = current_space_type_light.lightsDefinition
           current_space_type_lpd = current_space_type_light_def.wattsperSpaceFloorArea.get.round(1)
           arg_temp = OpenStudio::Measure::OSArgument.makeDoubleArgument("new_#{space_type.name.to_s}_lpd", true)
-          arg_temp.setDisplayName("New lighting power density for #{space_type.name.to_s} (W/m2)")
-          arg_temp.setDefaultValue(current_space_type_lpd)
+          arg_temp.setDisplayName("New lighting power density for #{space_type.name.to_s} (W/m2), original value = #{current_space_type_lpd} (W/m2)")
+          arg_temp.setDefaultValue(current_space_type_lpd*0.8)
           args << arg_temp
         end
       rescue
@@ -110,8 +110,8 @@ class LightingRetrofit < OpenStudio::Measure::ModelMeasure
         current_space_light_def = current_space_light.lightsDefinition
         current_space_lpd = current_space_light_def.wattsperSpaceFloorArea.get.round(1)
         arg_temp = OpenStudio::Measure::OSArgument.makeDoubleArgument("new_#{space.name.to_s}_lpd", true)
-        arg_temp.setDisplayName("New electric lighting power density for space: #{space.name.to_s} (W/m2)")
-        arg_temp.setDefaultValue(current_space_lpd)
+        arg_temp.setDisplayName("New electric lighting power density for space: #{space.name.to_s} (W/m2), original value = #{current_space_lpd} (W/m2)")
+        arg_temp.setDefaultValue(current_space_lpd*0.8)
         args << arg_temp
       end
     end
