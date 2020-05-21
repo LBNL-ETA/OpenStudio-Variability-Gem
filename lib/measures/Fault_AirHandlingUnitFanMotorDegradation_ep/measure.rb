@@ -194,7 +194,7 @@ class AirHandlingUnitFanMotorDegradation < OpenStudio::Ruleset::WorkspaceUserScr
     # write EMS Program, ProgramCallingManager and Actuators to change fan efficiency value at the degraded condition
 
     fannames.zip(old_effs).each do |fanname, old_eff|
-      fanshortname = fanname.gsub(/\s+/, '').gsub('*', '')
+      fanshortname = fanname.gsub(/\s+/, '').gsub('*', '').gsub('-', '_')
 
       string_objects << "
         EnergyManagementSystem:Program,
