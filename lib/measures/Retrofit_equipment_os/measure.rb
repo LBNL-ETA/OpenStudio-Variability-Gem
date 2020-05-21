@@ -22,7 +22,15 @@ class EquipmentRetrofit < OpenStudio::Measure::ModelMeasure
   end
 
 
-  def add_equip(model, space, space_type, space_type_equip_def)
+  def add_equip_space(space, space_type_equip_def)
+    # New equip
+    new_equip = OpenStudio::Model::ElectricEquipment.new(space_type_equip_def)
+    new_equip.setName("New #{space.name.to_s} equip")
+    new_equip.setSpace(space)
+    return new_equip
+  end
+
+  def add_equip_space_type(model, space, space_type, space_type_equip_def)
     # This function creates space specific equip and equip_defs based on space_type specific equip and equip_defs
     space_type_epd = space_type_equip_def.wattsperSpaceFloorArea.to_f
 
@@ -156,7 +164,7 @@ class EquipmentRetrofit < OpenStudio::Measure::ModelMeasure
         runner.registerInfo("Delete old equip object for #{space.name}")
         current_space_equip.remove
 
-        new_equip = add_equip(model, space, space, current_space_equip_def)
+        new_equip = add_equip_space(space, current_space_equip_def)
         equip_level_w = current_space_epd.to_f * space.floorArea.to_f
         ems_equip_program = add_equip_ems(model, new_equip, equip_level_w, equip_sch_ems_sensor, retrofit_month, retrofit_day)
         prog_calling_manager.addProgram(ems_equip_program)
@@ -191,7 +199,7 @@ class EquipmentRetrofit < OpenStudio::Measure::ModelMeasure
 
         current_spaces.each do |space|
           # Calculate equipemtn electric power for each space
-          new_equip = add_equip(model, space, space_type, current_space_type_equip_def)
+          new_equip = add_equip_space_type(model, space, space_type, current_space_type_equip_def)
           equip_level_w = current_space_type_epd.to_f * space.floorArea.to_f
           ems_equip_program = add_equip_ems(model, new_equip, equip_level_w, equip_sch_ems_sensor, retrofit_month, retrofit_day)
           prog_calling_manager.addProgram(ems_equip_program)
