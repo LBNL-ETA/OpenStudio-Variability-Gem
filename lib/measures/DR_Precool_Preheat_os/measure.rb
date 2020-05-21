@@ -57,7 +57,7 @@ class PreCoolingAndHeating < OpenStudio::Measure::ModelMeasure
     # make an argument for adjustment to cooling setpoint
     cooling_adjustment = OpenStudio::Measure::OSArgument.makeDoubleArgument('cooling_adjustment', true)
     cooling_adjustment.setDisplayName('Degrees Fahrenheit to Adjust Cooling Setpoint By')
-    cooling_adjustment.setDefaultValue(-2.0)
+    cooling_adjustment.setDefaultValue(-1.5)
     args << cooling_adjustment
 
     
