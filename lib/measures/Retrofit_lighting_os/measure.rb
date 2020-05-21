@@ -22,7 +22,8 @@ class LightingRetrofit < OpenStudio::Measure::ModelMeasure
   end
 
 
-  def add_light(model, space, space_type, space_type_light_def)
+  def add_light_space_type(model, space, space_type, space_type_light_def)
+    # For space type
     # This function creates space specific lights and light_defs based on space_type specific lights and light_defs
     space_type_lpd = space_type_light_def.wattsperSpaceFloorArea.to_f
     space_type_frac_rad = space_type_light_def.fractionRadiant.to_f
@@ -49,6 +50,16 @@ class LightingRetrofit < OpenStudio::Measure::ModelMeasure
 
     return new_light
   end
+
+
+  def add_light_space(model, space, space_light_def)
+    # New light
+    new_light = OpenStudio::Model::Lights.new(space_light_def)
+    new_light.setName("New #{space.name.to_s} light")
+    new_light.setSpace(space)
+    return new_light
+  end
+
 
   def add_light_ems(model, light, light_level_w, light_sch_ems_sensor, retrofit_month = 1, retrofit_day = 1)
     light_actuator = OpenStudio::Model::EnergyManagementSystemActuator.new(light, "Lights", "Electric Power Level")
@@ -95,7 +106,7 @@ class LightingRetrofit < OpenStudio::Measure::ModelMeasure
           current_space_type_lpd = current_space_type_light_def.wattsperSpaceFloorArea.get.round(1)
           arg_temp = OpenStudio::Measure::OSArgument.makeDoubleArgument("new_#{space_type.name.to_s}_lpd", true)
           arg_temp.setDisplayName("New lighting power density for #{space_type.name.to_s} (W/m2), original value = #{current_space_type_lpd} (W/m2)")
-          arg_temp.setDefaultValue(current_space_type_lpd*0.8)
+          arg_temp.setDefaultValue(current_space_type_lpd*0.7)
           args << arg_temp
         end
       rescue
@@ -111,7 +122,7 @@ class LightingRetrofit < OpenStudio::Measure::ModelMeasure
         current_space_lpd = current_space_light_def.wattsperSpaceFloorArea.get.round(1)
         arg_temp = OpenStudio::Measure::OSArgument.makeDoubleArgument("new_#{space.name.to_s}_lpd", true)
         arg_temp.setDisplayName("New electric lighting power density for space: #{space.name.to_s} (W/m2), original value = #{current_space_lpd} (W/m2)")
-        arg_temp.setDefaultValue(current_space_lpd*0.8)
+        arg_temp.setDefaultValue(current_space_lpd*0.7)
         args << arg_temp
       end
     end
@@ -153,17 +164,16 @@ class LightingRetrofit < OpenStudio::Measure::ModelMeasure
         runner.registerInfo("User entered new electric lighting power density for #{space.name.to_s} is #{current_space_lpd} W/m2")
 
         # Set ems
-        current_space_light_def = current_space_light.lightsDefinition
-        current_space_sch_set = space.defaultScheduleSet.get
-        current_space_light_sch_set = current_space_sch_set.lightingSchedule.get
+        current_space_light_def = current_space_light.lightsDefinitions
+        light_sch_name = current_space_light.schedule.get.nameString
 
-        light_sch_name = current_space_light_sch_set.nameString
+        # light_sch_name = current_space_light_sch_set.nameString
         light_sch_ems_sensor = OpenStudio::Model::EnergyManagementSystemSensor.new(model, 'Schedule Value')
         light_sch_ems_sensor.setKeyName(light_sch_name)
         runner.registerInfo("Delete old light object for #{space.name}")
         current_space_light.remove
+        new_light = add_light_space(model, space, current_space_light_def)
 
-        new_light = add_light(model, space, space, current_space_light_def)
         light_level_w = current_space_lpd.to_f * space.floorArea.to_f
         ems_light_program = add_light_ems(model, new_light, light_level_w, light_sch_ems_sensor, retrofit_month, retrofit_day)
         prog_calling_manager.addProgram(ems_light_program)
@@ -198,7 +208,7 @@ class LightingRetrofit < OpenStudio::Measure::ModelMeasure
         current_spaces.each do |space|
 
           # Calculate light electric power for each space
-          new_light = add_light(model, space, space_type, current_space_type_light_def)
+          new_light = add_light_space_type(model, space, space_type, current_space_type_light_def)
           light_level_w = current_space_type_lpd.to_f * space.floorArea.to_f
           ems_light_program = add_light_ems(model, new_light, light_level_w, light_sch_ems_sensor, retrofit_month, retrofit_day)
           prog_calling_manager.addProgram(ems_light_program)
