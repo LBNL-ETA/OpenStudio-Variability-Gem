@@ -164,7 +164,7 @@ class LightingRetrofit < OpenStudio::Measure::ModelMeasure
         runner.registerInfo("User entered new electric lighting power density for #{space.name.to_s} is #{current_space_lpd} W/m2")
 
         # Set ems
-        current_space_light_def = current_space_light.lightsDefinitions
+        current_space_light_def = current_space_light.lightsDefinition
         light_sch_name = current_space_light.schedule.get.nameString
 
         # light_sch_name = current_space_light_sch_set.nameString
