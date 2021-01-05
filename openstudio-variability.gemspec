@@ -6,8 +6,8 @@ require 'openstudio/variability/version'
 Gem::Specification.new do |spec|
   spec.name          = 'openstudio-variability'
   spec.version       = OpenStudio::Variability::VERSION
-  spec.authors       = ['']
-  spec.email         = ['']
+  spec.authors       = ['Han Li']
+  spec.email         = ['hanli@lbl.gov']
 
   spec.summary       = 'library and measures for OpenStudio'
   spec.description   = 'library and measures for OpenStudio'
